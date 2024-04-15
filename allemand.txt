@@ -1,0 +1,59 @@
+fr,de
+mentir, lügen
+ridicule, lächerlich
+sans gêne, ungeniert
+manger bruyamment, schmatzen
+siroter bruyamment, schlürfen
+sans égard, rücksichtslos
+curiosité, die Neugier
+avare, geizig
+pensée, der Gedanke
+sentiment, das Gefühl
+manières de table, die Tischmanieren
+couvert, das Besteck
+vaisselle, das Geschirr
+surestimer, überschätzen
+sous-estimer, unterschätzen
+convaincre, überzeugen
+compromis, der Kompromiss
+conversation, das Gespräch
+porter un jugement, beurteilen
+préjuger, das Vorurteil
+pourboire, das Trinkgeld
+sans équivoque, eindeutig
+ambigu, zweideutig
+blague, der Witz
+opposition contraire, der Gegensatz
+vif, lebhaft
+amusant, witzig
+bête, dumm
+qualité, die Eigenschaft
+comportement, das Benehmen
+faute, der Fehler
+erreur, der Fehler 
+vertu, die Tugend
+contenance attitude, die Haltung
+bonté, die Güte
+mal, das Böse
+coutume, die Sitte
+sagesse, die Weisheit
+honnêteté, die Ehrlichkeit
+malhonnête, unehrlich
+responsabilité, die Verantwortung
+délicatesse, das Feingefühl
+dignité, die Würde
+sincérité, die Aufrichtigkeit
+persévérance, die Ausdauer
+prudence, die Vorsicht
+patience, die Geduld
+généreux, grosszügig
+conscience, das Gewissen
+politesse, die Höflichkeit
+courage, der Mut
+fierté, der Stolz
+incapable, unfähig
+orgueilleux, hochmütig
+égoïsme, der Egoismus
+hypocrisie, die Heuchelei
+sans tacte, taktlos
+pitié, das Mitleid
