@@ -203,13 +203,3 @@ class GameHub:
     MessageChannel = 1016765673004867645
     Prefix = "?"
     
-class SettoOwner:
-    Name = "Owner"
-    __Token__ = "None"
-    apikey = "dQw4w9WgXcQ:djEwJn4AuPOuCeBLmxr3kLTxTG/bvmX3GauC2FR2matfeA338dFBMT7J1TPResV8rDA7D6BqN+q2vAir4AKbMW062kkvNlpfmKUvXkVKkIKsL0//GkYt+UlwF4e+cWYOyZ6WikU="
-    BotGuild = 969214672215625748
-    AnnonceChannel = 1066680440209027152
-    ConsoleChannel = 1016765628180348991
-    MessageChannel = 1016765673004867645
-    Prefix = "0xa0"
-    
