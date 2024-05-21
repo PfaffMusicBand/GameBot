@@ -78,11 +78,7 @@ class Common(commands.Cog):
         try:
             tts = gTTS(text=text_to_speak, lang=lg)
             tts.save('output.mp3')
-            ctx.voice_client.play(discord.FFmpegPCMAudio(source='output.mp3'))
-            while ctx.voice_client.is_playing():
-                await asyncio.sleep(1)
-            await ctx.reply("Succes", ephemeral=True)
-            os.remove('output.mp3')
+            await Botloader.Bot.play_audio(ctx,'output.mp3')
         except Exception as e:
             await ctx.reply(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
         

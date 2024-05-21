@@ -159,9 +159,11 @@ class BotClient(commands.Bot):
         blw, blws = Botloader.AutoMod.check_message(message.content)
         if message.author == self.user:
             return
-        elif message.channel.id == 1242185337053380738:
+        if message.channel.id == 1242185337053380738:
             ctx = await bot.get_context(message)
-            if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
+            if len(blw) != 0:
+                await ctx.reply("Surveillez votre langage.", ephemeral=True)
+            elif Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
                 await Botloader.Bot.on_refus_interaction(ctx)
             elif ctx.voice_client is None:
                 await ctx.send(f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.", ephemeral=True)
@@ -170,38 +172,39 @@ class BotClient(commands.Bot):
                     startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
                     txt = message.content
                     tts = gTTS(text=txt, lang="fr")
-                    tts.save(f'{ctx.guild.id}_{startTime}_output.mp3')
-                    ctx.voice_client.play(discord.FFmpegPCMAudio(source=f'{ctx.guild.id}_{startTime}_output.mp3'))
-                    while ctx.voice_client.is_playing():
-                        await asyncio.sleep(1)
-                    await ctx.reply("Succes", ephemeral=True)
-                    os.remove(f'{ctx.guild.id}_{startTime}_output.mp3')
+                    output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
+                    if os.path.exists(output_filename):
+                        i = 2
+                        while os.path.exists(f'{ctx.guild.id}_{startTime}_{i}_output.mp3'):
+                            i += 1
+                        output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
+                    tts.save(output_filename)
+                    await Botloader.Bot.play_audio(ctx, output_filename)
                 except Exception as e:
                     await ctx.reply(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
-        else:
-            if len(blw) != 0:
-                guild = self.get_guild(Botloader.Bot.BotGuild)
-                channel = guild.get_channel(Botloader.Bot.MessageChannel)
-                startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
-                if isinstance(message.channel, discord.channel.DMChannel):
-                    zone = "Signalement de langage offensant en DM."
-                else:
-                    zone = "Signalement de langage offensant."
-                embed = discord.Embed(title=zone, description=startTime, color=discord.Color.brand_red())
-                embed.set_thumbnail(url=message.author.avatar)
-                embed.add_field(name="User", value=message.author.mention, inline=False)
-                embed.add_field(name="Channel & Link", value=message.jump_url, inline=False)
-                embed.add_field(name="Message", value=message.content, inline=False)
-                embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
-                view = discord.ui.View()
-                item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
-                view.add_item(item=item)
-                for key in blw:
-                    embed.add_field(name=f"Mot {key} détecté:", value=f"{round(blws[key], 2)*100}% de resemblance avec **{blw[key]}**.", inline=False)
-                if message.attachments:
-                    for attachment in message.attachments:
-                        embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
-                await channel.send("||<@575746878583472128>||||<@724996627366019133>||",embed=embed, view=view)
+        if len(blw) != 0:
+            guild = self.get_guild(Botloader.Bot.BotGuild)
+            channel = guild.get_channel(Botloader.Bot.MessageChannel)
+            startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+            if isinstance(message.channel, discord.channel.DMChannel):
+                zone = "Signalement de langage offensant en DM."
+            else:
+                zone = "Signalement de langage offensant."
+            embed = discord.Embed(title=zone, description=startTime, color=discord.Color.brand_red())
+            embed.set_thumbnail(url=message.author.avatar)
+            embed.add_field(name="User", value=message.author.mention, inline=False)
+            embed.add_field(name="Channel & Link", value=message.jump_url, inline=False)
+            embed.add_field(name="Message", value=message.content, inline=False)
+            embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
+            view = discord.ui.View()
+            item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
+            view.add_item(item=item)
+            for key in blw:
+                embed.add_field(name=f"Mot {key} détecté:", value=f"{round(blws[key], 2)*100}% de resemblance avec **{blw[key]}**.", inline=False)
+            if message.attachments:
+                for attachment in message.attachments:
+                    embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
+            await channel.send("||<@575746878583472128>||||<@724996627366019133>||",embed=embed, view=view)
         await self.process_commands(message)
 
 bot = client = BotClient(command_prefix=Botloader.Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")

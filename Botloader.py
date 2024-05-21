@@ -7,6 +7,9 @@ import sqlite3
 import pytz
 from collections import defaultdict
 import asyncio
+import discord
+from collections import deque
+
 
 __path__ = os.path.dirname(os.path.abspath(__file__))
 tz = pytz.timezone('Europe/Paris')
@@ -349,6 +352,22 @@ class version:
     laster = 1.4
 
 class Bot():
+
+    queue = deque()
+
+    async def play_audio(ctx, file):
+        if ctx.voice_client.is_playing():
+            Bot.queue.append((ctx, file))
+            await ctx.reply("Audio ajouté à la file d'attente.", ephemeral=True)
+        else:
+            ctx.voice_client.play(discord.FFmpegPCMAudio(file), after=lambda e: Bot.on_play_finish(ctx, file))
+            await ctx.reply("Succes", ephemeral=True)
+
+    def on_play_finish(ctx, file):
+        os.remove(file)
+        if Bot.queue:
+            next_ctx, next_file = Bot.queue.popleft()
+            asyncio.run_coroutine_threadsafe(Bot.play_audio(next_ctx, next_file), ctx.bot.loop)
 
     async def on_refus_interaction(ctx, *arg):
         await ctx.reply("L'intéraction a été expressément refusée car vous ne possédez pas les autorisations nécéssaire.")

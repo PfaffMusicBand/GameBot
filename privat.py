@@ -88,7 +88,7 @@ class Privat(commands.Cog):
                 await ctx.channel.send(embed=embed)
                 def checkMessage(message):
                     return ctx.author == message.author and ctx.channel == message.channel
-                rep = await self.wait_for("message", check = checkMessage)
+                rep = await self.bot.wait_for("message", check = checkMessage)
                 if rep.content in reponse:
                     j, titre, color, url = j + 1, "Juste", discord.Colour.green(), "https://cdn3.emoji.gg/emojis/2990_yes.png"
                 else:
