@@ -3,15 +3,13 @@ from gtts import gTTS
 from Levenshtein import distance
 from datetime import datetime
 import inspect
-__path__ = os.path.dirname(os.path.abspath(__file__))
+import sqlite3
+import pytz
+from collections import defaultdict
+import asyncio
 
-class FFMPEG:
-    executable = r"ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
-    
-    def maketts(text, langage="fr", name = "output.mp3"):
-        tts_instance = gTTS(text, lang=langage)
-        tts_instance.save(name)
-        return name
+__path__ = os.path.dirname(os.path.abspath(__file__))
+tz = pytz.timezone('Europe/Paris')
     
 class Downloader:
     download_path = r"download"
@@ -27,8 +25,7 @@ class owner_permission:
         if member_id != owner_permission.owner_id:
             return False
         else: return True
-
-class auto_mod:
+class AutoMod:
     black_liste = []
 
     @staticmethod
@@ -38,18 +35,30 @@ class auto_mod:
 
     @staticmethod
     def var_word_init():
-        variation = {}
+        variation = defaultdict(list)
         with open("blackwordvariation.txt", "r", encoding="utf-8") as data:
-            for ligne in data:
-                ligne = ligne.split(",")
-                if ligne:
-                    variation.update({var: ligne for var in ligne})
+            for line in data:
+                vars, true_var = line.strip().split("@")
+                vars = vars.split(",")
+                true_var = true_var.split(",")
+                for var in vars:
+                    variation[var].extend(true_var)
         return variation
 
     @staticmethod
     def preprocess_word(word):
         word = word.lower()
+        remplacements = {
+        'à': 'a', '@': 'a', 'â': 'a', 'ä': 'a',
+        'ô': 'o', 'ö': 'o',
+        'ç': 'c',
+        'û': 'u', 'ü': 'u',
+        'ê': 'e', 'ë': 'e',
+        'î': 'i', 'ï': 'i'
+    }
         translation_table = str.maketrans("", "", r",;.:!?/-+&\"#'{([-|`_)=}]°$£¤µ%§")
+        word = word.translate(translation_table)
+        translation_table = str.maketrans(remplacements)
         word = word.translate(translation_table)
         word = word.replace("\n", "")
         modified_word = ""
@@ -71,59 +80,63 @@ class auto_mod:
 
     @staticmethod
     def check_from_dictionary(word):
-        if word in map(str.lower, auto_mod.check_word_init()):
+        if word in map(str.lower, AutoMod.check_word_init()):
             return True, word, 1
         return False, "", 0
     
     @staticmethod
     def check_from_levenshtein(word):
-        tword = min(auto_mod.check_word_init(), key=lambda bword: distance(bword, word) / len(bword))
+        tword = min(AutoMod.check_word_init(), key=lambda bword: distance(bword, word) / len(bword))
         similarity = 1 - (distance(word, tword) / max(len(word), len(tword)))
         return tword, similarity
     
     @staticmethod
     def check_word(word):
-        processed_word = auto_mod.preprocess_word(word)
+        tword = ""
+        similarity = 0
+        processed_word = AutoMod.preprocess_word(word)
         if all(c.isalpha() or c.isspace() for c in processed_word):
-            check, word, similarity = auto_mod.check_from_dictionary(processed_word)
+            check, word, similarity = AutoMod.check_from_dictionary(processed_word)
             if check:
                 return True, word, 1
             else:
-                tword, similarity = auto_mod.check_from_levenshtein(processed_word)
+                tword, similarity = AutoMod.check_from_levenshtein(processed_word)
                 if similarity < 0.3:
                     return False, tword, similarity
+                var_word = AutoMod.var_word_init()
                 combinations = [processed_word]
-                for key in auto_mod.var_word_init():
+                for key in var_word:
                     if key in processed_word:
                         new_combinations = []
-                        for variation in auto_mod.var_word_init()[key]:
+                        for variation in var_word[key]:
                             for word in combinations:
-                                new_word = auto_mod.preprocess_word(word.replace(key, variation))
+                                new_word = AutoMod.preprocess_word(word.replace(key, variation))
                                 if len(new_word) < 10 and new_word not in new_combinations:
                                     new_combinations.append(new_word)
-                        combinations = new_combinations
-                    counter = 0
-                for word in combinations:
-                    counter = counter+1
-                for new_word in combinations:
-                    check, _, similarity = auto_mod.check_from_dictionary(new_word)
-                    if check:
-                        return True, new_word, similarity
+                        for world in new_combinations:
+                            combinations.append(world)
+                if combinations != "":
+                    for new_word in combinations:
+                        a,similarity = AutoMod.check_from_levenshtein(processed_word)
+                        check, _, c = AutoMod.check_from_dictionary(new_word)
+                        if check:
+                            return True, new_word, similarity
                 return False, "", 0
         else:
             combinations = [processed_word]
-            for key in auto_mod.var_word_init():
+            var_word = AutoMod.var_word_init()
+            for key in var_word:
                 if key in processed_word:
                     new_combinations = []
-                    for variation in auto_mod.var_word_init()[key]:
+                    for variation in var_word[key]:
                         for word in combinations:
                             new_word = processed_word.replace(key, variation)
-                            new_word = auto_mod.preprocess_word(new_word)
+                            new_word = AutoMod.preprocess_word(new_word)
                             if len(new_word) < 16 and new_word not in new_combinations:
                                 new_combinations.append(new_word)
                     combinations = new_combinations
             for new_word in combinations:
-                tword, similarity = auto_mod.check_from_levenshtein(processed_word)
+                tword, similarity = AutoMod.check_from_levenshtein(processed_word)
                 if similarity > 0.70:
                     return True, tword, similarity
             return False, tword, similarity
@@ -133,29 +146,220 @@ class auto_mod:
         black_word_similarity = {}
         message_content = message.split(" ")
         for word in message_content:
-            check, true_word, similarity = auto_mod.check_word(word)
+            check, true_word, similarity = AutoMod.check_word(word)
             if check:
                 black_word[word] = true_word
                 black_word_similarity[word] = similarity
         return black_word, black_word_similarity
-                
+
+
+import sqlite3
+
+import sqlite3
 
 class Data:
+    cmd_value = {
+        'sayic': 'say_in_channel_permission',
+        'say': 'say_command_permission',
+        'dm': 'privat_message_bot_permission',
+        'vtts': 'vtts_command_permission',
+        'ftts': 'ftts_commande_permission',
+        'rdm': 'rdm_commande_permission',
+        'voca': 'voca_commande_permission',
+        'vtts_l': 'vtts_direct_message_permission'
+    }
+
+    category = {
+        'permission': 'permission_category',
+        'xp': 'xp_category'
+    }
+
+    guil_conf = {
+        'xp_message': 'xp_by_message_rexard',
+        'xp_vocal': 'xp_by_vocal_reward'
+    }
+
+    def __init__(self, db_path):
+        self.db_path = db_path
+        self.connection = sqlite3.connect(db_path)
+        self.cursor = self.connection.cursor()
+        self.create_tables()
+
+    def create_tables(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS guild_conf (
+                                guild_id INTEGER,
+                                conf_key TEXT,
+                                conf_value TEXT,
+                                PRIMARY KEY (guild_id, conf_key)
+                            )''')
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_conf (
+                                guild_id INTEGER,
+                                user_id INTEGER,
+                                category TEXT,
+                                conf_key TEXT,
+                                conf_value TEXT,
+                                PRIMARY KEY (guild_id, user_id, category, conf_key)
+                            )''')
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_game_data (
+                                user_id INTEGER,
+                                guild_id INTEGER,
+                                game_key TEXT,
+                                game_value TEXT,
+                                PRIMARY KEY (user_id, guild_id, game_key)
+                            )''')
+
+        self.connection.commit()
     
-    def void():
-        return
+    @staticmethod
+    def insert_guild_conf(guild_id, conf_key, conf_value):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''INSERT OR REPLACE INTO guild_conf (guild_id, conf_key, conf_value)
+                               VALUES (?, ?, ?)''', (guild_id, conf_key, conf_value))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def insert_user_conf(guild_id, user_id, category, variable_key, variable_value):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''INSERT OR REPLACE INTO user_conf (guild_id, user_id, category, conf_key, conf_value)
+                               VALUES (?, ?, ?, ?, ?)''', (guild_id, user_id, category, variable_key, variable_value))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def insert_user_game_data(user_id, guild_id, game_key, game_value):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''INSERT OR REPLACE INTO user_game_data (user_id, guild_id, game_key, game_value)
+                               VALUES (?, ?, ?, ?)''', (user_id, guild_id, game_key, game_value))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def get_guild_conf(guild_id, conf_key):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''SELECT conf_value FROM guild_conf
+                               WHERE guild_id = ? AND conf_key = ?''', (guild_id, conf_key))
+        result = cursor.fetchone()
+        connection.close()
+        if result:
+            return result[0]
+        else:
+            return None
+
+    @staticmethod
+    def get_user_conf(guild_id, user_id, category, conf_key):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''SELECT conf_value FROM user_conf
+                               WHERE guild_id = ? AND user_id = ? AND category = ? AND conf_key = ?''',
+                            (guild_id, user_id, category, conf_key))
+        result = cursor.fetchone()
+        connection.close()
+        if result:
+            return result[0]
+        else:
+            return None
+
+    @staticmethod
+    def get_user_game_data(user_id, guild_id, game_key):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''SELECT game_value FROM user_game_data
+                               WHERE user_id = ? AND guild_id = ? AND game_key = ?''', (user_id, guild_id, game_key))
+        result = cursor.fetchone()
+        connection.close()
+        if result:
+            return result[0]
+        else:
+            return None
+
+    @staticmethod
+    def update_guild_conf(guild_id, conf_key, conf_value):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE guild_conf
+                               SET conf_value = ?
+                               WHERE guild_id = ? AND conf_key = ?''',
+                            (conf_value, guild_id, conf_key))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def update_user_conf(guild_id, user_id, category, conf_key, conf_value):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE user_conf
+                               SET conf_value = ?
+                               WHERE guild_id = ? AND user_id = ? AND category = ? AND conf_key = ?''',
+                            (conf_value, guild_id, user_id, category, conf_key))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def update_user_game_data(user_id, guild_id, game_key, game_value):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''UPDATE user_game_data
+                               SET game_value = ?
+                               WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
+                            (game_value, user_id, guild_id, game_key))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def delete_guild_conf(guild_id, conf_key):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''DELETE FROM guild_conf
+                               WHERE guild_id = ? AND conf_key = ?''',
+                            (guild_id, conf_key))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def delete_user_conf(guild_id, user_id, category, conf_key):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''DELETE FROM user_conf
+                               WHERE guild_id = ? AND user_id = ? AND category = ? AND conf_key = ?''',
+                            (guild_id, user_id, category, conf_key))
+        connection.commit()
+        connection.close()
+
+    @staticmethod
+    def delete_user_game_data(user_id, guild_id, game_key):
+        connection = sqlite3.connect(f"{Bot.Name}.db")
+        cursor = connection.cursor()
+        cursor.execute('''DELETE FROM user_game_data
+                               WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
+                            (user_id, guild_id, game_key))
+        connection.commit()
+        connection.close()
+
     
 class version:
     forward = [1.1, 1.2]
     recommanded = 1.3
     laster = 1.4
-    
-class Bot:
-    
-    privates_guilds = [592737567699501147, 969214672215625748, 963051007586213919]
+
+class Bot():
+
+    async def on_refus_interaction(ctx, *arg):
+        await ctx.reply("L'intéraction a été expressément refusée car vous ne possédez pas les autorisations nécéssaire.")
+
+    def maketts(text, langage="fr", name = "output.mp3"):
+        tts_instance = gTTS(text, lang=langage)
+        tts_instance.save(name)
+        return name
 
     def console(type, arg):
-        startTime = datetime.strftime(datetime.now(), '%H:%M:%S')
+        startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
         print(f"[{startTime} {type}] {inspect.stack()[1].function}: {arg}")
     
     def Launched(launched_bot):
@@ -166,7 +370,9 @@ class Bot:
         Bot.AnnonceChannel = launched_bot_class.AnnonceChannel
         Bot.ConsoleChannel = launched_bot_class.ConsoleChannel
         Bot.MessageChannel = launched_bot_class.MessageChannel
+        Bot.BugReportChannel = launched_bot_class.BugreportChannel
         Bot.Prefix = launched_bot_class.Prefix
+        Bot.Database = Data(f"{Bot.Name}.db")
 
     Name = str()
     Token = str()
@@ -174,6 +380,7 @@ class Bot:
     AnnonceChannel = int()
     ConsoleChannel = int()
     MessageChannel = int()
+    BugReportChannel = int()
     Prefix = str()
 
 class BetaBelouga:
@@ -183,6 +390,7 @@ class BetaBelouga:
     AnnonceChannel = 1066680440209027152
     ConsoleChannel = 972036600357879828
     MessageChannel = 1009208789674754098
+    BugreportChannel = 1239839087888830466
     Prefix = "BB"
 
 class Belouga:
@@ -192,14 +400,17 @@ class Belouga:
     AnnonceChannel = 1066680440209027152
     ConsoleChannel = 972036409085014046
     MessageChannel = 1175569633357598742
+    BugreportChannel = 1239839087888830466
     Prefix = "BL"
 
 class GameHub:
     Name = "GameHub"
-    __Token__ = "MTEyNDA0NTEwNjU1MTQ1NTc1NA.G7MVDb.S9xyeJatNfRV-TwbhDApZ_ewATFV7CRVQMfpLs"
-    BotGuild = 969214672215625748
-    AnnonceChannel = 1066680440209027152
-    ConsoleChannel = 1016765628180348991
-    MessageChannel = 1016765673004867645
+    __Token__ = "MTEyNDA0NTEwNjU1MTQ1NTc1NA.GOpQbm.Q0XejDRLmgm4ipGXRDDbDxkcnKojgEqYNdOx5c"
+    BotGuild = 1108421336042328125
+    AnnonceChannel = 1141666570188361771
+    ConsoleChannel = 1141666570188361771
+    MessageChannel = 1141666570188361771
+    BugreportChannel = 1141666570188361771
+    VTTSListenerChannel = 1242185337053380738
     Prefix = "?"
     

@@ -24,7 +24,9 @@ class Privat(commands.Cog):
     @commands.hybrid_command(name = "voca")
     @app_commands.autocomplete(lang = voca_autocompletion)
     async def testvoca(self, interaction: Context, lang: str, nombre: int):
-        await Privat.test_voca_logic(self.bot, interaction, lang, nombre)
+        if Botloader.Data.get_user_conf(interaction.guild.id, interaction.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['voca']) == "1":
+            return await Privat.test_voca_logic(self.bot, interaction, lang, nombre)
+        else: return await Botloader.Bot.on_refus_interaction(interaction)
 
     async def test_voca_logic(self, ctx: Context, lang, nombre):
         Privat.voca_user_data[ctx.author.id] = f"{lang}, {nombre}"
@@ -100,7 +102,7 @@ class Privat(commands.Cog):
                             """, color=color)
                 embed.set_thumbnail(url = url)
                 await ctx.channel.send(embed=embed)
-                await ctx.channel.send(file=discord.File(Botloader.FFMPEG.maketts(reponse, lg, name=f"{reponse}.mp3")))
+                await ctx.channel.send(file=discord.File(Botloader.Bot.maketts(reponse, lg, name=f"{reponse}.mp3")))
                 os.remove(f'{reponse}.mp3')
             note = j*20/total
             note = round(note, 1)
@@ -132,28 +134,23 @@ class Privat(commands.Cog):
     #spam commande
     @commands.hybrid_command(name="dm")
     async def dm(self, ctx: Context, mention: discord.User,*,msg):
-        message = ctx.message
-        if len(message.attachments) > 1:
-            await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")
-            return
-        try:
-            channel = await mention.create_dm()
-        except discord.Forbidden: ctx.reply("Impossible d'envoyer le message.")
-        embed = discord.Embed(title = "**Message**", description = msg, color=discord.Colour.dark_magenta())
-        embed.set_author(name = ctx.author.name, icon_url = ctx.author.avatar)
-        view = discord.ui.View()
-        item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Signaler un Spam", custom_id= "Spam", disabled=False)
-        view.add_item(item=item)
-        if message.attachments :
-            embed.add_field(name="**Pièce(s) Jointe(s)**", value=f"Pièce joints envoyé par {ctx.author}.")
-            for attachment in message.attachments:
-                await attachment.save(Botloader.Downloader.get_path(attachment.filename))
-                file=discord.File(Botloader.Downloader.get_path(attachment.filename))
-                await channel.send(embed=embed ,view=view, file=file)
-                os.remove(Botloader.Downloader.get_path(attachment.filename))
-        else:
-            await channel.send(embed=embed ,view=view)
-        return
-        
-def setup(bot):
-    bot.add_cog(Privat(bot))
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['dm']) == "1":
+            message = ctx.message
+            if len(message.attachments) > 1:
+                return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")
+            try:
+                channel = await mention.create_dm()
+            except discord.Forbidden: ctx.reply("Impossible d'envoyer le message.")
+            embed = discord.Embed(title = "**Message**", description = msg, color=discord.Colour.dark_magenta())
+            embed.set_author(name = ctx.author.name, icon_url = ctx.author.avatar)
+            view = discord.ui.View()
+            item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Signaler un Spam", custom_id= "Spam", disabled=False)
+            view.add_item(item=item)
+            if message.attachments :
+                for attachment in message.attachments:
+                    embed.set_image(url= attachment.url)
+                    await channel.send(embed=embed, view=view)
+            else:
+                await channel.send(embed=embed ,view=view)
+            return await ctx.reply("Succès", ephemeral=True) 
+        return await Botloader.Bot.on_refus_interaction(ctx)
