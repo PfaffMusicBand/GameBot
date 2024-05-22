@@ -24,7 +24,7 @@ class Privat(commands.Cog):
     @commands.hybrid_command(name = "voca")
     @app_commands.autocomplete(lang = voca_autocompletion)
     async def testvoca(self, interaction: Context, lang: str, nombre: int):
-        if Botloader.Data.get_user_conf(interaction.guild.id, interaction.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['voca']) == "1":
+        if Botloader.Data.get_user_conf(interaction.guild.id, interaction.author.id, Botloader.Data.cmd_value['voca']) == "1":
             return await Privat.test_voca_logic(self.bot, interaction, lang, nombre)
         else: return await Botloader.Bot.on_refus_interaction(interaction)
 
@@ -134,7 +134,7 @@ class Privat(commands.Cog):
     #spam commande
     @commands.hybrid_command(name="dm")
     async def dm(self, ctx: Context, mention: discord.User,*,msg):
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['dm']) == "1":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['dm']) == "1":
             message = ctx.message
             if len(message.attachments) > 1:
                 return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")

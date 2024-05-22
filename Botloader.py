@@ -160,6 +160,8 @@ import sqlite3
 
 import sqlite3
 
+import sqlite3
+
 class Data:
     cmd_value = {
         'sayic': 'say_in_channel_permission',
@@ -177,8 +179,8 @@ class Data:
         'xp': 'xp_category'
     }
 
-    guil_conf = {
-        'xp_message_by_character': 'xp_by_message_rexard',
+    guild_conf = {
+        'xp_message_by_character': 'xp_by_message_reward',
         'xp_vocal_by_minute': 'xp_by_vocal_reward'
     }
 
@@ -199,10 +201,9 @@ class Data:
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_conf (
                                 guild_id INTEGER,
                                 user_id INTEGER,
-                                category TEXT,
                                 conf_key TEXT,
                                 conf_value TEXT,
-                                PRIMARY KEY (guild_id, user_id, category, conf_key)
+                                PRIMARY KEY (guild_id, user_id, conf_key)
                             )''')
 
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_game_data (
@@ -213,23 +214,28 @@ class Data:
                                 PRIMARY KEY (user_id, guild_id, game_key)
                             )''')
 
+        # Ajout des index pour améliorer les performances des requêtes
+        self.cursor.execute('''CREATE INDEX IF NOT EXISTS idx_guild_conf ON guild_conf (guild_id, conf_key)''')
+        self.cursor.execute('''CREATE INDEX IF NOT EXISTS idx_user_conf ON user_conf (guild_id, user_id, conf_key)''')
+        self.cursor.execute('''CREATE INDEX IF NOT EXISTS idx_user_game_data ON user_game_data (user_id, guild_id, game_key)''')
+
         self.connection.commit()
-    
+
     @staticmethod
     def insert_guild_conf(guild_id, conf_key, conf_value):
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''INSERT OR REPLACE INTO guild_conf (guild_id, conf_key, conf_value)
-                               VALUES (?, ?, ?)''', (guild_id, conf_key, conf_value))
+                          VALUES (?, ?, ?)''', (guild_id, conf_key, conf_value))
         connection.commit()
         connection.close()
 
     @staticmethod
-    def insert_user_conf(guild_id, user_id, category, variable_key, variable_value):
+    def insert_user_conf(guild_id, user_id, conf_key, conf_value):
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
-        cursor.execute('''INSERT OR REPLACE INTO user_conf (guild_id, user_id, category, conf_key, conf_value)
-                               VALUES (?, ?, ?, ?, ?)''', (guild_id, user_id, category, variable_key, variable_value))
+        cursor.execute('''INSERT OR REPLACE INTO user_conf (guild_id, user_id, conf_key, conf_value)
+                          VALUES (?, ?, ?, ?)''', (guild_id, user_id, conf_key, conf_value))
         connection.commit()
         connection.close()
 
@@ -238,7 +244,7 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''INSERT OR REPLACE INTO user_game_data (user_id, guild_id, game_key, game_value)
-                               VALUES (?, ?, ?, ?)''', (user_id, guild_id, game_key, game_value))
+                          VALUES (?, ?, ?, ?)''', (user_id, guild_id, game_key, game_value))
         connection.commit()
         connection.close()
 
@@ -247,7 +253,7 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''SELECT conf_value FROM guild_conf
-                               WHERE guild_id = ? AND conf_key = ?''', (guild_id, conf_key))
+                          WHERE guild_id = ? AND conf_key = ?''', (guild_id, conf_key))
         result = cursor.fetchone()
         connection.close()
         if result:
@@ -256,12 +262,12 @@ class Data:
             return None
 
     @staticmethod
-    def get_user_conf(guild_id, user_id, category, conf_key):
+    def get_user_conf(guild_id, user_id, conf_key):
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''SELECT conf_value FROM user_conf
-                               WHERE guild_id = ? AND user_id = ? AND category = ? AND conf_key = ?''',
-                            (guild_id, user_id, category, conf_key))
+                          WHERE guild_id = ? AND user_id = ? AND conf_key = ?''',
+                       (guild_id, user_id, conf_key))
         result = cursor.fetchone()
         connection.close()
         if result:
@@ -274,7 +280,7 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''SELECT game_value FROM user_game_data
-                               WHERE user_id = ? AND guild_id = ? AND game_key = ?''', (user_id, guild_id, game_key))
+                          WHERE user_id = ? AND guild_id = ? AND game_key = ?''', (user_id, guild_id, game_key))
         result = cursor.fetchone()
         connection.close()
         if result:
@@ -287,20 +293,20 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''UPDATE guild_conf
-                               SET conf_value = ?
-                               WHERE guild_id = ? AND conf_key = ?''',
-                            (conf_value, guild_id, conf_key))
+                          SET conf_value = ?
+                          WHERE guild_id = ? AND conf_key = ?''',
+                       (conf_value, guild_id, conf_key))
         connection.commit()
         connection.close()
 
     @staticmethod
-    def update_user_conf(guild_id, user_id, category, conf_key, conf_value):
+    def update_user_conf(guild_id, user_id, conf_key, conf_value):
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''UPDATE user_conf
-                               SET conf_value = ?
-                               WHERE guild_id = ? AND user_id = ? AND category = ? AND conf_key = ?''',
-                            (conf_value, guild_id, user_id, category, conf_key))
+                          SET conf_value = ?
+                          WHERE guild_id = ? AND user_id = ? AND conf_key = ?''',
+                       (conf_value, guild_id, user_id, conf_key))
         connection.commit()
         connection.close()
 
@@ -309,9 +315,9 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''UPDATE user_game_data
-                               SET game_value = ?
-                               WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
-                            (game_value, user_id, guild_id, game_key))
+                          SET game_value = ?
+                          WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
+                       (game_value, user_id, guild_id, game_key))
         connection.commit()
         connection.close()
 
@@ -320,18 +326,18 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''DELETE FROM guild_conf
-                               WHERE guild_id = ? AND conf_key = ?''',
-                            (guild_id, conf_key))
+                          WHERE guild_id = ? AND conf_key = ?''',
+                       (guild_id, conf_key))
         connection.commit()
         connection.close()
 
     @staticmethod
-    def delete_user_conf(guild_id, user_id, category, conf_key):
+    def delete_user_conf(guild_id, user_id, conf_key):
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''DELETE FROM user_conf
-                               WHERE guild_id = ? AND user_id = ? AND category = ? AND conf_key = ?''',
-                            (guild_id, user_id, category, conf_key))
+                          WHERE guild_id = ? AND user_id = ? AND conf_key = ?''',
+                       (guild_id, user_id, conf_key))
         connection.commit()
         connection.close()
 
@@ -340,10 +346,11 @@ class Data:
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
         cursor.execute('''DELETE FROM user_game_data
-                               WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
-                            (user_id, guild_id, game_key))
+                          WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
+                       (user_id, guild_id, game_key))
         connection.commit()
         connection.close()
+
 
     
 class version:

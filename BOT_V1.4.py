@@ -94,7 +94,7 @@ class BotClient(commands.Bot):
         await self.versions(type="commande", ctx=ctx)
         
     async def ping(self, ctx: Context):
-        embed = discord.Embed(title="PONG", description=f":ping_pong: Le ping est de **{round(self.bot.latency)}** secondes!")
+        embed = discord.Embed(title="PONG", description=f":ping_pong: Le ping est de **{round(self.latency)}** secondes!")
         await ctx.send(embed=embed)
         
     async def restart(self, ctx: Context):
@@ -207,26 +207,29 @@ class BotClient(commands.Bot):
                     embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
             await channel.send("||<@575746878583472128>||||<@724996627366019133>||",embed=embed, view=view)
         else:
-            print('ok')
             count = 0
             for char in message.content:
                 if char != ' ':
                     count += 1
-            data = Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total')
-            data_m = Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_message')
-            xp_multiplicator = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guil_conf['xp_message_by_character'])
+            data = Botloader.Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_total')
+            data_m = Botloader.Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_message')
+            xp_multiplicator = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guild_conf['xp_message_by_character'])
             if xp_multiplicator is None:
                 xp_multiplicator = 1
+            else:
+                xp_multiplicator = float(xp_multiplicator)
             if data is None:
-                print('init')
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_message', 1)
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_vocal', 1)
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total', 2)
-            print('reok')
-            Botloader.Data.update_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_in_message', data_m+count*xp_multiplicator)
-            Botloader.Data.update_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total', data+count*xp_multiplicator)
-            print('ok end')
-            await message.reply(f'Vous avez gagné {count*xp_multiplicator}. Vous avez un total de {data+count*xp_multiplicator} don {data_m+count*xp_multiplicator} grâce aux messages.')
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_message', 0)
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_vocal', 0)
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_total', 0)
+                data = 0
+                data_m = 0
+            else:
+                data = float(data)
+                data_m = float(data_m)
+            Botloader.Data.update_user_conf(message.guild.id, message.author.id, 'xp_reward_message', data_m + count * xp_multiplicator)
+            Botloader.Data.update_user_conf(message.guild.id, message.author.id, 'xp_reward_total', data + count * xp_multiplicator)
+            await message.reply(f'Vous avez gagné {count * xp_multiplicator}. Vous avez un total de {data + count * xp_multiplicator} dont {data_m + count * xp_multiplicator} grâce aux messages.')
 
 bot = client = BotClient(command_prefix=Botloader.Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")
 bot.remove_command('help')

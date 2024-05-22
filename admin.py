@@ -54,15 +54,15 @@ class Admin(commands.Cog):
     @commands.has_permissions(administrator = True)
     @app_commands.autocomplete(parametre=srvconf_autocompletion)
     async def serverconf(self, ctx: Context, parametre: str, valeur: str):
-        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guil_conf[parametre])
+        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre])
         if data is not None:
             try:
-                Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guil_conf[parametre], valeur)
+                Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre], valeur)
                 return await ctx.reply(f"Le paramètre {parametre} a bien été modifié: {data} => {valeur}.")
             except Exception as e:
                 return await ctx.reply(f"Erreur: {e}.")
         try:
-            Botloader.Data.insert_guild_conf(ctx.guild.id, Botloader.Data.guil_conf[parametre], valeur)
+            Botloader.Data.insert_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre], valeur)
             return await ctx.reply(f"Le paramètre {parametre} a bien été définit sur {valeur}.")
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
