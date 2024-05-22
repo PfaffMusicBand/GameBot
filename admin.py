@@ -17,7 +17,7 @@ class Admin(commands.Cog):
             ]
     
     async def srvconf_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-        parametres = ['xp_message_by_minute', 'xp_vocal_ny_minute']
+        parametres = ['xp_message_by_character', 'xp_vocal_ny_minute']
         return [
                 app_commands.Choice(name=parametre, value=parametre)
                 for parametre in parametres if current.lower() in parametre.lower()

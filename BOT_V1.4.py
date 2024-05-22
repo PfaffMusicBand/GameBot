@@ -156,6 +156,7 @@ class BotClient(commands.Bot):
                 return await interaction.message.edit(embed=embed, view=view)
 
     async def on_message(self, message: discord.Message):
+        await self.process_commands(message)
         blw, blws = Botloader.AutoMod.check_message(message.content)
         if message.author == self.user:
             return
@@ -213,15 +214,19 @@ class BotClient(commands.Bot):
                     count += 1
             data = Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total')
             data_m = Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_message')
+            xp_multiplicator = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guil_conf['xp_message_by_character'])
+            if xp_multiplicator is None:
+                xp_multiplicator = 1
             if data is None:
+                print('init')
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_message', 1)
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_vocal', 1)
-            xp_multiplicator = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guil_conf['xp_message_by_character'])
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total', 2)
+            print('reok')
             Botloader.Data.update_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_in_message', data_m+count*xp_multiplicator)
             Botloader.Data.update_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total', data+count*xp_multiplicator)
-            print('ok')
+            print('ok end')
             await message.reply(f'Vous avez gagné {count*xp_multiplicator}. Vous avez un total de {data+count*xp_multiplicator} don {data_m+count*xp_multiplicator} grâce aux messages.')
-        await self.process_commands(message)
 
 bot = client = BotClient(command_prefix=Botloader.Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")
 bot.remove_command('help')
