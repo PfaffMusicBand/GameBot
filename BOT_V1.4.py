@@ -157,32 +157,38 @@ class BotClient(commands.Bot):
 
     async def on_message(self, message: discord.Message):
         await self.process_commands(message)
-        blw, blws = Botloader.AutoMod.check_message(message.content)
         if message.author == self.user:
             return
         if message.channel.id == 1242185337053380738:
-            ctx = await bot.get_context(message)
-            if len(blw) != 0:
-                await ctx.reply("Surveillez votre langage.", ephemeral=True)
-            elif Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
+            if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
                 await Botloader.Bot.on_refus_interaction(ctx)
-            elif ctx.voice_client is None:
-                await ctx.send(f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.", ephemeral=True)
             else:
+                M = await message.reply("En cour de validation...", mention_author=False)
+                ctx = await bot.get_context(message)
                 try:
-                    startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
-                    txt = message.content
-                    tts = gTTS(text=txt, lang="fr")
-                    output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
-                    if os.path.exists(output_filename):
-                        i = 2
-                        while os.path.exists(f'{ctx.guild.id}_{startTime}_{i}_output.mp3'):
-                            i += 1
-                        output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
-                    tts.save(output_filename)
-                    await Botloader.Bot.play_audio(ctx, output_filename)
-                except Exception as e:
-                    await ctx.reply(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
+                    blw, blws = Botloader.AutoMod.check_message(message.content)
+                except:
+                    await M.edit("Echeque de la validation.")
+                if len(blw) != 0:
+                    await M.edit("Echeque de la validation: surveillez votre langage.")
+                elif ctx.voice_client is None:
+                    await M.edit(f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.")
+                else:
+                    try:
+                        startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                        txt = message.content
+                        tts = gTTS(text=txt, lang="fr")
+                        output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
+                        if os.path.exists(output_filename):
+                            i = 2
+                            while os.path.exists(f'{ctx.guild.id}_{startTime}_{i}_output.mp3'):
+                                i += 1
+                            output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
+                        tts.save(output_filename)
+                        await Botloader.Bot.play_audio(ctx, output_filename)
+                    except Exception as e:
+                        await M.edit(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
+        else: blw, blws = Botloader.AutoMod.check_message(message.content)
         if len(blw) != 0:
             guild = self.get_guild(Botloader.Bot.BotGuild)
             channel = guild.get_channel(Botloader.Bot.MessageChannel)
@@ -223,7 +229,7 @@ class BotClient(commands.Bot):
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_vocal', 0)
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_total', 0)
                 data = 0
-                data_m = 0
+                data_m = 0 
             else:
                 data = float(data)
                 data_m = float(data_m)
