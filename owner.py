@@ -14,7 +14,7 @@ class Owner(commands.Cog):
         if not Botloader.owner_permission.check(ctx.author.id):
             return
         try:
-            Botloader.Data.insert_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.category['permission'], variable_key=variable, variable_value=value)
+            Botloader.Data.insert_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.user_category['permission'], variable_key=variable, variable_value=value)
             await ctx.reply(f"Membre {member} ajouté à la liste {variable} avec la valeur {value}")
         except Exception as e:
             await ctx.reply(f"Erreur: {e}.")
@@ -24,8 +24,8 @@ class Owner(commands.Cog):
         if not Botloader.owner_permission.check(ctx.author.id):
             return
         try:
-            value = Botloader.Data.get_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.category['permission'], variable_key=variable)
-            Botloader.Data.delete_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.category['permission'], variable_key=variable)
+            value = Botloader.Data.get_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.user_category['permission'], variable_key=variable)
+            Botloader.Data.delete_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.user_category['permission'], variable_key=variable)
             await ctx.reply(f"Membre {member} supprimé de la liste {variable} (valeur: {value})")
         except Exception as e:
             await ctx.reply(f"Erreur: {e}.")
@@ -35,7 +35,7 @@ class Owner(commands.Cog):
         if not Botloader.owner_permission.check(ctx.author.id):
             return
         try:
-            value = Botloader.Data.get_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.category['permission'], variable_key=variable)
+            value = Botloader.Data.get_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.user_category['permission'], variable_key=variable)
             await ctx.reply(f"Valeur de la variable {variable} pour {member}: {value}")
         except Exception as e:
             await ctx.reply(f"Erreur: {e}.")
@@ -45,8 +45,8 @@ class Owner(commands.Cog):
         if not Botloader.owner_permission.check(ctx.author.id):
             return
         try:
-            value = Botloader.Data.get_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.category['permission'], variable_key=variable)
-            Botloader.Data.update_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.category['permission'], variable_key=variable, variable_value=new_value)
+            value = Botloader.Data.get_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.user_category['permission'], variable_key=variable)
+            Botloader.Data.update_user_conf(guild_id=ctx.guild.id, user_id=member.id, category=Botloader.Data.user_category['permission'], variable_key=variable, variable_value=new_value)
             await ctx.reply(f"Valeur de la variable {variable} pour {member} mise à jour: {value} => {new_value}.")
         except Exception as e:
             await ctx.reply(f"Erreur: {e}.")

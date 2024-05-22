@@ -163,7 +163,7 @@ class BotClient(commands.Bot):
             ctx = await bot.get_context(message)
             if len(blw) != 0:
                 await ctx.reply("Surveillez votre langage.", ephemeral=True)
-            elif Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
+            elif Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
                 await Botloader.Bot.on_refus_interaction(ctx)
             elif ctx.voice_client is None:
                 await ctx.send(f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.", ephemeral=True)
@@ -205,6 +205,22 @@ class BotClient(commands.Bot):
                 for attachment in message.attachments:
                     embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
             await channel.send("||<@575746878583472128>||||<@724996627366019133>||",embed=embed, view=view)
+        else:
+            print('ok')
+            count = 0
+            for char in message.content:
+                if char != ' ':
+                    count += 1
+            data = Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total')
+            data_m = Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_message')
+            if data is None:
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_message', 1)
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_vocal', 1)
+            xp_multiplicator = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guil_conf['xp_message_by_character'])
+            Botloader.Data.update_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_in_message', data_m+count*xp_multiplicator)
+            Botloader.Data.update_user_conf(message.guild.id, message.author.id, Botloader.Data.user_category['xp'], 'xp_reward_total', data+count*xp_multiplicator)
+            print('ok')
+            await message.reply(f'Vous avez gagné {count*xp_multiplicator}. Vous avez un total de {data+count*xp_multiplicator} don {data_m+count*xp_multiplicator} grâce aux messages.')
         await self.process_commands(message)
 
 bot = client = BotClient(command_prefix=Botloader.Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")

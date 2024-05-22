@@ -17,7 +17,7 @@ class Admin(commands.Cog):
             ]
     
     async def srvconf_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-        parametres = ['xp_message', 'xp_vocal']
+        parametres = ['xp_message_by_minute', 'xp_vocal_ny_minute']
         return [
                 app_commands.Choice(name=parametre, value=parametre)
                 for parametre in parametres if current.lower() in parametre.lower()
@@ -28,15 +28,15 @@ class Admin(commands.Cog):
     @app_commands.autocomplete(cmd = blackliste_autocompletion)
     async def blackliste(self, ctx: Context, member: discord.Member, cmd, permission: bool):
         var_key = Botloader.Data.cmd_value[cmd]
-        data = Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], cmd)
+        data = Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], cmd)
         if data is not None:
             try:
-                Botloader.Data.update_user_conf(ctx.guild.id,member.id, Botloader.Data.category['permission'],var_key,permission)
+                Botloader.Data.update_user_conf(ctx.guild.id,member.id, Botloader.Data.user_category['permission'],var_key,permission)
                 return await ctx.reply(f"Membre {member} ajouté à la blackliste de la command {cmd} (précédemment {data}).")
             except Exception as e:
                 return await ctx.reply(f"Erreur: {e}.")
         try:
-            Botloader.Data.insert_user_conf(guild_id=ctx.guild.id, user_id=member.id,category=Botloader.Data.category['permission'] , variable_key=var_key, variable_value=permission)
+            Botloader.Data.insert_user_conf(guild_id=ctx.guild.id, user_id=member.id,category=Botloader.Data.user_category['permission'] , variable_key=var_key, variable_value=permission)
             return await ctx.reply(f"Membre {member} ajouté à la blackliste de la command {cmd}.")
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")

@@ -49,7 +49,7 @@ class Common(commands.Cog):
         blw, blws = Botloader.AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['sayic']) == "0":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['sayic']) == "0":
             return await Botloader.Bot.on_refus_interaction(ctx)
         await channel.send(text)
         await ctx.reply(f"Votre message a bien été envoyé dans #{channel}!")
@@ -59,7 +59,7 @@ class Common(commands.Cog):
         blw, blws = Botloader.AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['say']) == "0":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['say']) == "0":
             return await Botloader.Bot.on_refus_interaction(ctx)
         await ctx.send(text)
 
@@ -69,7 +69,7 @@ class Common(commands.Cog):
         blw, blws = Botloader.AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['vtts']) == "0":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['vtts']) == "0":
             return await Botloader.Bot.on_refus_interaction(ctx)
         if ctx.voice_client is None:
             await ctx.send("Le bot n'est pas connecté à un canal vocal. Utilisez !join pour le faire rejoindre un canal vocal.", ephemeral=True)
@@ -88,7 +88,7 @@ class Common(commands.Cog):
         blw, blws = Botloader.AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['ftts']) == "0":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['ftts']) == "0":
             return await Botloader.Bot.on_refus_interaction(ctx)
         try:
             tts = gTTS(text=text_to_speak, lang=lg)
@@ -105,7 +105,7 @@ class Common(commands.Cog):
         
     @commands.hybrid_command(name = "rdm")
     async def randome(self, ctx: Context, min: int, max: int):
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.category['permission'], Botloader.Data.cmd_value['rdm']) == "0":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['rdm']) == "0":
             return await Botloader.Bot.on_refus_interaction(ctx)
         try:
             if int(max) > int(min):
