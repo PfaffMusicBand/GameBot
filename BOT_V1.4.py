@@ -160,34 +160,35 @@ class BotClient(commands.Bot):
         if message.author == self.user:
             return
         if message.channel.id == 1242185337053380738:
-            if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.user_category['permission'], Botloader.Data.cmd_value['vtts_l']) != "1":
+            ctx = await bot.get_context(message)
+            if Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.cmd_value['vtts_l']) != "1":
                 await Botloader.Bot.on_refus_interaction(ctx)
             else:
-                M = await message.reply("En cour de validation...", mention_author=False)
-                ctx = await bot.get_context(message)
+                M = await ctx.reply("En cour de validation...", mention_author=False)
                 try:
                     blw, blws = Botloader.AutoMod.check_message(message.content)
-                except:
-                    await M.edit("Echeque de la validation.")
-                if len(blw) != 0:
-                    await M.edit("Echeque de la validation: surveillez votre langage.")
-                elif ctx.voice_client is None:
-                    await M.edit(f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.")
-                else:
-                    try:
-                        startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
-                        txt = message.content
-                        tts = gTTS(text=txt, lang="fr")
-                        output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
-                        if os.path.exists(output_filename):
-                            i = 2
-                            while os.path.exists(f'{ctx.guild.id}_{startTime}_{i}_output.mp3'):
-                                i += 1
-                            output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
-                        tts.save(output_filename)
-                        await Botloader.Bot.play_audio(ctx, output_filename)
-                    except Exception as e:
-                        await M.edit(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
+                    if len(blw) != 0:
+                        await M.edit(content="Echeque de la validation: surveillez votre langage.")
+                    elif ctx.voice_client is None:
+                        await M.edit(content=f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.")
+                    else:
+                        try:
+                            startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                            txt = message.content
+                            tts = gTTS(text=txt, lang="fr")
+                            output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
+                            if os.path.exists(output_filename):
+                                i = 2
+                                while os.path.exists(f'{ctx.guild.id}_{startTime}_{i}_output.mp3'):
+                                    i += 1
+                                output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
+                            tts.save(output_filename)
+                            await Botloader.Bot.play_audio(ctx, output_filename)
+                            await M.edit(content="Succès.")
+                        except Exception as e:
+                            await M.edit(content="Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
+                except Exception as e:
+                    print(e)
         else: blw, blws = Botloader.AutoMod.check_message(message.content)
         if len(blw) != 0:
             guild = self.get_guild(Botloader.Bot.BotGuild)
@@ -214,6 +215,8 @@ class BotClient(commands.Bot):
             await channel.send("||<@575746878583472128>||||<@724996627366019133>||",embed=embed, view=view)
         else:
             count = 0
+            if message.attachments:
+                count = 5
             for char in message.content:
                 if char != ' ':
                     count += 1
@@ -225,6 +228,7 @@ class BotClient(commands.Bot):
             else:
                 xp_multiplicator = float(xp_multiplicator)
             if data is None:
+                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'actual_xp_level', 0)
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_message', 0)
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_vocal', 0)
                 Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_total', 0)

@@ -368,7 +368,6 @@ class Bot():
             await ctx.reply("Audio ajouté à la file d'attente.", ephemeral=True)
         else:
             ctx.voice_client.play(discord.FFmpegPCMAudio(file), after=lambda e: Bot.on_play_finish(ctx, file))
-            await ctx.reply("Succes", ephemeral=True)
 
     def on_play_finish(ctx, file):
         os.remove(file)
@@ -383,6 +382,10 @@ class Bot():
         tts_instance = gTTS(text, lang=langage)
         tts_instance.save(name)
         return name
+    
+    def check_level(message):
+        level = Data.get_user_conf(message.guild.id, message.author.id, 'actual_xp_level')
+        xp = Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_total')
 
     def console(type, arg):
         startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
