@@ -5,6 +5,7 @@ import discord
 import inspect
 import sqlite3
 import pytz
+import sqlite3
 from gtts import gTTS
 from Levenshtein import distance
 from datetime import datetime
@@ -156,13 +157,6 @@ class AutoMod:
                 black_word_similarity[word] = similarity
         return black_word, black_word_similarity
 
-
-import sqlite3
-
-import sqlite3
-
-import sqlite3
-
 class Data:
     cmd_value = {
         'sayic': 'say_in_channel_permission',
@@ -172,7 +166,8 @@ class Data:
         'ftts': 'ftts_commande_permission',
         'rdm': 'rdm_commande_permission',
         'voca': 'voca_commande_permission',
-        'vtts_l': 'vtts_direct_message_permission'
+        'vtts_l': 'vtts_direct_message_permission',
+        'execute': 'execute_command_permission'
     }
 
     user_category = {
@@ -380,7 +375,7 @@ class Bot():
             asyncio.run_coroutine_threadsafe(Bot.play_audio(next_ctx, next_file), ctx.bot.loop)
 
     async def on_refus_interaction(ctx, *arg):
-        await ctx.reply("L'intéraction a été expressément refusée car vous ne possédez pas les autorisations nécéssaire.")
+        await ctx.reply("L'intéraction a été expressément refusée car vous ne possédez pas les autorisations nécéssaire.", ephemeral = True)
 
     def maketts(text, langage="fr", name = "output.mp3"):
         tts_instance = gTTS(text, lang=langage)

@@ -2,7 +2,7 @@ import discord
 import os
 import re
 import Botloader
-from discord.ext import commands
+import aiohttp
 from gtts import gTTS
 from datetime import datetime
 
@@ -29,6 +29,30 @@ class GenerateMP3Action:
         await ctx.send(file=discord.File(output_filename))
         os.remove(output_filename)
 
+class CreateRoleAction:
+    def __init__(self, name, color):
+        self.name = name
+        self.color = discord.Color(int(color, 16))
+    async def execute(self, ctx):
+        guild = ctx.guild
+        await guild.create_role(name=self.name, color=self.color)
+        await ctx.send(f"Role '{self.name}' created with color {self.color}.")
+
+class SendImageFromURLAction:
+    def __init__(self, url):
+        self.url = url
+    async def execute(self, ctx):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.url) as response:
+                if response.status == 200:
+                    data = await response.read()
+                    with open('temp_image.png', 'wb') as f:
+                        f.write(data)
+                    await ctx.send(file=discord.File('temp_image.png'))
+                    os.remove('temp_image.png')
+                else:
+                    await ctx.send('Failed to retrieve image from URL.')
+
 def parse_actions(actions: str):
     action_list = []
     actions = actions.strip()
@@ -39,19 +63,20 @@ def parse_actions(actions: str):
         action_strs = [actions]
 
     def check_secondary(content: str):
-        calc_pattern = r'Calc\((.*?)\)'
-        matches = re.findall(calc_pattern, content)
+        matches = re.findall(r'Calc\[(.*?)\]', content)
         for calc_expression in matches:
             try:
                 result = eval(calc_expression)
-                content = content.replace(f'Calc({calc_expression})', str(result))
+                content = content.replace(f'Calc[{calc_expression}]', str(result))
             except Exception as e:
                 Botloader.Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
         return content
+
     for action_str in action_strs:
         send_message_match = re.match(r'SendMessage\{(.*?)\}', action_str)
         generate_mp3_match = re.match(r'GenerateMP3\{(.*?)\}', action_str)
-        print(action_str)
+        create_role_match = re.match(r'CreateRole\{(.*?)\}', action_str)
+        send_image_match = re.match(r'SendImage\{(.*?)\}', action_str)
         if send_message_match:
             content = send_message_match.group(1)
             result = check_secondary(content)
@@ -59,7 +84,6 @@ def parse_actions(actions: str):
                 action_list.append(SendMessageAction(result))
             else:
                 action_list.append(SendMessageAction(content))
-        
         elif generate_mp3_match:
             params = generate_mp3_match.group(1)
             txt, lg = params.split(";")
@@ -68,5 +92,12 @@ def parse_actions(actions: str):
                 action_list.append(GenerateMP3Action(result, lg))
             else:
                 action_list.append(GenerateMP3Action(txt, lg))
+        elif create_role_match:
+            params = create_role_match.group(1)
+            name, color = params.split(";")
+            action_list.append(CreateRoleAction(name, color))
+        elif send_image_match:
+            url = send_image_match.group(1)
+            action_list.append(SendImageFromURLAction(url))
     
     return action_list

@@ -69,11 +69,12 @@ class Admin(commands.Cog):
             return await ctx.reply(f"Erreur: {e}.")
     
     @commands.hybrid_command(name="execute")
-    #@commands.has_permissions(administrator = True)
     async def execute(self, ctx: Context,*,actions: str):
-        try:
-            action_list = parse_actions(actions)
-            for action in action_list:
-                await action.execute(ctx)
-        except Exception as e:
-            await ctx.send(f"Error: {str(e)}")
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['execute']) == "1":
+            try:
+                action_list = parse_actions(actions)
+                for action in action_list:
+                    await action.execute(ctx)
+            except Exception as e:
+                await ctx.send(f"Error: {str(e)}")
+        else: await Botloader.Bot.on_refus_interaction(ctx)
