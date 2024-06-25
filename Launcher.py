@@ -20,7 +20,7 @@ def main():
 
 os.system("cls||clear")
 
-liste = ["SettoOwner","BetaBelouga","Belouga","GameHub"]
+liste = ["","BetaBelouga","Belouga","GameHub"]
 
 LICENCE = open("LICENCE").read()
 print(LICENCE)

@@ -1,8 +1,9 @@
 import discord
-from discord.ext import commands
-from gtts import gTTS
 import os
 import re
+import Botloader
+from discord.ext import commands
+from gtts import gTTS
 from datetime import datetime
 
 class SendMessageAction:
@@ -45,7 +46,7 @@ def parse_actions(actions: str):
                 result = eval(calc_expression)
                 content = content.replace(f'Calc({calc_expression})', str(result))
             except Exception as e:
-                print(f"Erreur lors de l'évaluation de {calc_expression}: {e}")
+                Botloader.Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
         return content
     for action_str in action_strs:
         send_message_match = re.match(r'SendMessage\{(.*?)\}', action_str)

@@ -1,10 +1,10 @@
+import discord
+import Botloader
 from discord.ext import commands
 from discord.ext.commands import Context
 from discord import app_commands
 from typing import List
 from interpretor import parse_actions
-import discord
-import Botloader
 
 class Admin(commands.Cog):
     def __init__(self, bot):

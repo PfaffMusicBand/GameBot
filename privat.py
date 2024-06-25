@@ -1,10 +1,10 @@
 import discord
+import os
+import Botloader
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
-import Botloader
 from typing import List
-import os
 from random import randint
 
 class Privat(commands.Cog):

@@ -1,21 +1,20 @@
 import discord
 import asyncio
 import os
+import discord.ext
+import discord.ext.commands
+import Botloader
+import argparse
 from random import randint
 from typing import Any
 from discord.ext import commands
 from datetime import datetime
 from gtts import gTTS
-import discord.ext.commands
-import Botloader
-import argparse
 from common import Common
-import discord.ext
 from privat import Privat
 from owner import Owner
 from admin import Admin
 from discord.ext.commands import Context
-import functools
 
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
