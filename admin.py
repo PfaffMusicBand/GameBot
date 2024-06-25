@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from discord import app_commands
 from typing import List
+from interpretor import parse_actions
 import discord
 import Botloader
 
@@ -17,7 +18,7 @@ class Admin(commands.Cog):
             ]
     
     async def srvconf_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-        parametres = ['xp_message_by_character', 'xp_vocal_by_minute']
+        parametres = ['xp_message_by_character', 'xp_vocal_by_minute', 'automod_channel']
         return [
                 app_commands.Choice(name=parametre, value=parametre)
                 for parametre in parametres if current.lower() in parametre.lower()
@@ -49,7 +50,7 @@ class Admin(commands.Cog):
             return await ctx.send("Succès.", ephemeral=True)
         except ValueError:
             return await ctx.reply('Veuillez entrer un entier valide comme argument.')
-        
+
     @commands.hybrid_command(name="srvconf")
     @commands.has_permissions(administrator = True)
     @app_commands.autocomplete(parametre=srvconf_autocompletion)
@@ -66,3 +67,13 @@ class Admin(commands.Cog):
             return await ctx.reply(f"Le paramètre {parametre} a bien été définit sur {valeur}.")
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
+    
+    @commands.hybrid_command(name="execute")
+    #@commands.has_permissions(administrator = True)
+    async def execute(self, ctx: Context,*,actions: str):
+        try:
+            action_list = parse_actions(actions)
+            for action in action_list:
+                await action.execute(ctx)
+        except Exception as e:
+            await ctx.send(f"Error: {str(e)}")

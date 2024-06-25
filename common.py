@@ -42,7 +42,11 @@ class Common(commands.Cog):
         item = discord.ui.Button(style=discord.ButtonStyle.grey, label="Non Recevable", custom_id="bugreport_correction_n", disabled=False)
         view.add_item(item=item)
         await channel.send(embed=embed, view=view)
-        await ctx.reply("Merci d'avoire signalé le bug!", ephemeral=True)
+        await ctx.reply("Merci d'avoire signalé le bug! \n Si vous avez des question contactez nous: <support@gamebot.smaugue.lol>", ephemeral=True)
+
+    @commands.hybrid_command(name="mpt")
+    async def play(self, ctx: Context, filename: str):
+        await Botloader.Bot.play_audio(ctx,filename)
         
     @commands.hybrid_command(name="sayic", help = f"Permet de fair parler le bot dans un channel définit.")
     async def sayInChannel(self, ctx: Context, channel : discord.TextChannel, text):
@@ -79,6 +83,7 @@ class Common(commands.Cog):
             tts = gTTS(text=text_to_speak, lang=lg)
             tts.save('output.mp3')
             await Botloader.Bot.play_audio(ctx,'output.mp3')
+            await ctx.reply('Succès.', ephemeral=True)
         except Exception as e:
             await ctx.reply(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
         

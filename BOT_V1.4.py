@@ -20,8 +20,9 @@ import functools
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
     parser.add_argument('Botname', type=str, default="Bot", help='Nom du bot à lancer')
+    parser.add_argument('--pasword', type=str, default="", help="Mot de passe")
     args = parser.parse_args()
-    Botloader.Bot.Launched(args.Botname)
+    Botloader.Bot.Launched(args.Botname, str(args.pasword))
 
 if __name__ == '__main__':
     main()
@@ -109,6 +110,8 @@ class BotClient(commands.Bot):
         r = "y"
         await self.close()
 
+
+#gestion interaction boutons
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.type == discord.InteractionType.component:
             await interaction.response.defer()
@@ -156,19 +159,47 @@ class BotClient(commands.Bot):
                 return await interaction.message.edit(embed=embed, view=view)
 
     async def on_message(self, message: discord.Message):
-        await self.process_commands(message)
         if message.author == self.user:
             return
+        blw, blws = Botloader.AutoMod.check_message(message.content)
+        if len(blw) != 0:
+            automod_channel_id = Botloader.Data.get_guild_conf(message.guild.id, 'automod_channel_report')
+            print(automod_channel_id)
+            if automod_channel_id is not None:
+                channel = message.guild.get_channel(automod_channel_id)
+                if channel:
+                    startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                    if isinstance(message.channel, discord.channel.DMChannel):
+                        zone = "Signalement de langage offensant en DM."
+                    else:
+                        zone = "Signalement de langage offensant."
+                    embed = discord.Embed(title=zone, description=startTime, color=discord.Color.brand_red())
+                    embed.set_thumbnail(url=message.author.avatar.url)
+                    embed.add_field(name="User", value=message.author.mention, inline=False)
+                    embed.add_field(name="Channel & Link", value=message.jump_url, inline=False)
+                    embed.add_field(name="Message", value=message.content, inline=False)
+                    embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
+                    view = discord.ui.View()
+                    item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
+                    view.add_item(item=item)
+                    for key in blw:
+                        embed.add_field(name=f"Mot {key} détecté:", value=f"{round(blws[key], 2) * 100}% de ressemblance avec **{blw[key]}**.", inline=False)
+                    if message.attachments:
+                        for attachment in message.attachments:
+                            embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
+                    if channel.id == Botloader.GameHub.MessageChannel:
+                        await channel.send("||<@575746878583472128>||||<@724996627366019133>||", embed=embed, view=view)
+                    else:
+                        await channel.send(embed=embed, view=view)
         if message.channel.id == 1242185337053380738:
             ctx = await bot.get_context(message)
             if Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.cmd_value['vtts_l']) != "1":
                 await Botloader.Bot.on_refus_interaction(ctx)
             else:
-                M = await ctx.reply("En cour de validation...", mention_author=False)
+                M = await ctx.reply("En cours de validation...", mention_author=False)
                 try:
-                    blw, blws = Botloader.AutoMod.check_message(message.content)
                     if len(blw) != 0:
-                        await M.edit(content="Echeque de la validation: surveillez votre langage.")
+                        await M.edit(content="Échec de la validation: surveillez votre langage.")
                     elif ctx.voice_client is None:
                         await M.edit(content=f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.")
                     else:
@@ -177,69 +208,21 @@ class BotClient(commands.Bot):
                             txt = message.content
                             tts = gTTS(text=txt, lang="fr")
                             output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
+                            
                             if os.path.exists(output_filename):
                                 i = 2
                                 while os.path.exists(f'{ctx.guild.id}_{startTime}_{i}_output.mp3'):
                                     i += 1
                                 output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
+                            
                             tts.save(output_filename)
                             await Botloader.Bot.play_audio(ctx, output_filename)
                             await M.edit(content="Succès.")
                         except Exception as e:
-                            await M.edit(content="Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
+                            await M.edit(content=f"Une erreur est survenue: {str(e)} \n N'hésitez pas à faire un `/bugreport`")
                 except Exception as e:
                     print(e)
-        else: blw, blws = Botloader.AutoMod.check_message(message.content)
-        if len(blw) != 0:
-            guild = self.get_guild(Botloader.Bot.BotGuild)
-            channel = guild.get_channel(Botloader.Bot.MessageChannel)
-            startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
-            if isinstance(message.channel, discord.channel.DMChannel):
-                zone = "Signalement de langage offensant en DM."
-            else:
-                zone = "Signalement de langage offensant."
-            embed = discord.Embed(title=zone, description=startTime, color=discord.Color.brand_red())
-            embed.set_thumbnail(url=message.author.avatar)
-            embed.add_field(name="User", value=message.author.mention, inline=False)
-            embed.add_field(name="Channel & Link", value=message.jump_url, inline=False)
-            embed.add_field(name="Message", value=message.content, inline=False)
-            embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
-            view = discord.ui.View()
-            item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
-            view.add_item(item=item)
-            for key in blw:
-                embed.add_field(name=f"Mot {key} détecté:", value=f"{round(blws[key], 2)*100}% de resemblance avec **{blw[key]}**.", inline=False)
-            if message.attachments:
-                for attachment in message.attachments:
-                    embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
-            await channel.send("||<@575746878583472128>||||<@724996627366019133>||",embed=embed, view=view)
-        else:
-            count = 0
-            if message.attachments:
-                count = 5
-            for char in message.content:
-                if char != ' ':
-                    count += 1
-            data = Botloader.Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_total')
-            data_m = Botloader.Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_message')
-            xp_multiplicator = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guild_conf['xp_message_by_character'])
-            if xp_multiplicator is None:
-                xp_multiplicator = 1
-            else:
-                xp_multiplicator = float(xp_multiplicator)
-            if data is None:
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'actual_xp_level', 0)
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_message', 0)
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_vocal', 0)
-                Botloader.Data.insert_user_conf(message.guild.id, message.author.id, 'xp_reward_total', 0)
-                data = 0
-                data_m = 0 
-            else:
-                data = float(data)
-                data_m = float(data_m)
-            Botloader.Data.update_user_conf(message.guild.id, message.author.id, 'xp_reward_message', data_m + count * xp_multiplicator)
-            Botloader.Data.update_user_conf(message.guild.id, message.author.id, 'xp_reward_total', data + count * xp_multiplicator)
-            await message.reply(f'Vous avez gagné {count * xp_multiplicator}. Vous avez un total de {data + count * xp_multiplicator} dont {data_m + count * xp_multiplicator} grâce aux messages.')
+        await self.process_commands(message)
 
 bot = client = BotClient(command_prefix=Botloader.Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")
 bot.remove_command('help')
@@ -285,6 +268,8 @@ async def on_command_error(ctx: Context, error):
         return await ctx.reply("Missing Argument", ephemeral=True)
     if isinstance(error, commands.CommandNotFound):
         return await ctx.reply("Command no found.", ephemeral=True)
+    if isinstance(error, commands.MissingPermissions):
+        ctx.reply('Missiong permissions.', ephemeral=True)
     guild = bot.get_guild(Botloader.Bot.BotGuild)
     channel = guild.get_channel_or_thread(Botloader.Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug",description=f"Commande concernée `{command}`.",colour=discord.Colour.orange())
@@ -298,5 +283,7 @@ async def on_command_error(ctx: Context, error):
     view.add_item(item=item)
     await channel.send(embed=embed, view=view)
 
-bot.run(Botloader.Bot.Token)
-os.system(f"python Launcher.py --bot {Botloader.Bot.Name} --version {botversion} --restart {r}")
+try:
+    bot.run(Botloader.Bot.Token)
+except: print("Bad Pasword")
+os.system(f"python Launcher.py --bot {Botloader.Bot.Name} --version {botversion} --restart {r} --pasword {Botloader.Bot.Pasword}")

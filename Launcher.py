@@ -5,12 +5,12 @@ def main():
     try:
         parser = argparse.ArgumentParser(description='Scripte Launcher.')
         parser.add_argument('--bot', type=str, default="Bot", help='Nom du bot à lancer')
-        parser.add_argument('--version', type=float, default=1.2, help='Version du scripte de bot actuel.')
+        parser.add_argument('--version', type=float, default=1.4, help='Version du scripte de bot actuel.')
         parser.add_argument('--restart', type=str, default="n", help='Redémarage du bot y/n.')
+        parser.add_argument('--pasword', type=str, default="pasword", help="Mot de passe")
         args = parser.parse_args()
-
         if args.restart.lower() == "y":
-            launch_bot(args.bot, args.version)
+            launch_bot(args.bot, args.version, args.pasword)
         else:
             start()
 
@@ -43,9 +43,9 @@ def start():
 |    Quel bot désirez vous lancer?                      |
 |    _____________________________                      |
 |   |[versions]|[___Bot___]|[code]|                     |
-|   |   <1.2   |BetaBelouga|   1  |                     |
-|   |   <1.2   |  Belouga  |   2  |                     |
-|   |   <1.2   |  GameHub  |   3  |                     |
+|   |     x    |BetaBelouga|   1  |                     |
+|   |     x    |  Belouga  |   2  |                     |
+|   |     x    |  GameHub  |   3  |                     |
 |   '''''''''''''''''''''''''''''''                     |
 =========================================================
 
@@ -61,24 +61,23 @@ Bot: {liste[int(bot)]}
 |    Selectionnez une version:                          |
 |    _________________                                  |
 |   |[versions]|[code]|                                 |
-|   |  GH(1.1) |  1.1 |                                 |
-|   |  BB(1.2) |  1.2 |                                 |
-|   |BB/GH(1.3)|  1.3 |                                 |
-|   |BB/GH(1.4)|  1.4 |                                 |
+|   |   1.4    |  1.4 |                                 |
 |   '''''''''''''''''''                                 |
 =========================================================
 
 Version=>   """)
+    pasword = input("Pasword =>")
+
     try:
-        launch_bot(bot_name = liste[int(bot)], bot_version=float(version))
+        launch_bot(bot_name = liste[int(bot)], bot_version=float(version), pasword=pasword)
     except Exception as errors:
         print(f"Une erreur est survenue:{errors}")
         start()
     pass
 
-def launch_bot(bot_name, bot_version):
+def launch_bot(bot_name, bot_version, pasword):
     try:
-        os.system(f"python BOT_V{bot_version}.py {bot_name}")
+        os.system(f"python BOT_V{bot_version}.py {bot_name} --pasword {pasword}")
     except Exception as errors:
         print(f"Une erreur est survenue : {errors}")
         start()

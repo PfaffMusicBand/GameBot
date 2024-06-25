@@ -9,6 +9,7 @@ from collections import defaultdict
 import asyncio
 import discord
 from collections import deque
+import math
 
 
 __path__ = os.path.dirname(os.path.abspath(__file__))
@@ -181,7 +182,8 @@ class Data:
 
     guild_conf = {
         'xp_message_by_character': 'xp_by_message_reward',
-        'xp_vocal_by_minute': 'xp_by_vocal_reward'
+        'xp_vocal_by_minute': 'xp_by_vocal_reward',
+        'automod_channel': 'automod_channel_report'
     }
 
     def __init__(self, db_path):
@@ -356,7 +358,9 @@ class Data:
 class version:
     forward = [1.1, 1.2]
     recommanded = 1.3
-    laster = 1.4
+    beta = 1.4
+    alpha = 1.5
+
 
 class Bot():
 
@@ -383,18 +387,43 @@ class Bot():
         tts_instance.save(name)
         return name
     
-    def check_level(message):
-        level = Data.get_user_conf(message.guild.id, message.author.id, 'actual_xp_level')
-        xp = Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_total')
+    async def check_level(message: discord.Message):
+        print('1')
+        level = int(Data.get_user_conf(message.guild.id, message.author.id, 'actual_xp_level'))
+        xp = int(Data.get_user_conf(message.guild.id, message.author.id, 'xp_reward_total'))
+        a = 64
+        b = 100
+        c = -154 - xp
+        discriminant = b**2 - 4*a*c     
+        sqrt_discriminant = math.sqrt(discriminant)
+        x1 = (-b + sqrt_discriminant) / (2 * a)
+        if x1 -1 < level:
+            return
+        else:
+            new_level = level + 1
+            if new_level > level:
+                Data.update_user_conf(message.guild.id, message.author.id, 'actual_xp_level', new_level)
+                await message.reply(f"Félicitations, vous gagnez un niveau (niveau {new_level})!")
+
 
     def console(type, arg):
         startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
         print(f"[{startTime} {type}] {inspect.stack()[1].function}: {arg}")
+
+    def get_token(token, key):
+        codes = token.split()
+        token = ""
+        for i, code in enumerate(codes):
+            decalage = ord(key[i % len(key)])
+            char = chr((int(code) - decalage)%256)
+            token += char
+        return token
     
-    def Launched(launched_bot):
+    def Launched(launched_bot, pasword):
         launched_bot_class = globals()[launched_bot]
+        Bot.Pasword = pasword
         Bot.Name = launched_bot_class.Name
-        Bot.Token = launched_bot_class.__Token__
+        Bot.Token = Bot.get_token(launched_bot_class.__Token__, pasword)
         Bot.BotGuild = launched_bot_class.BotGuild
         Bot.AnnonceChannel = launched_bot_class.AnnonceChannel
         Bot.ConsoleChannel = launched_bot_class.ConsoleChannel
@@ -411,10 +440,11 @@ class Bot():
     MessageChannel = int()
     BugReportChannel = int()
     Prefix = str()
+    Pasword = str()
 
 class BetaBelouga:
     Name= "BetaBelouga"
-    __Token__ = "OTY5NTIwOTYyMjIxNTEwNjU2.Ymumwg.YXeEiL-gIwv_A_22t-mS2-jvVNQ"
+    __Token__ = "159 181 192 164 178 189 170 199 176 187 200 221 182 203 153 217 181 195 169 224 175 186 182 153 157 189 214 214 189 216 206 157 189 193 198 149 202 179 156 203 178 216 198 192 168 206 150 155 213 125 206 186 161 145 211 215 166 175 184"
     BotGuild = 969214672215625748
     AnnonceChannel = 1066680440209027152
     ConsoleChannel = 972036600357879828
@@ -424,7 +454,7 @@ class BetaBelouga:
 
 class Belouga:
     Name= "Belouga"
-    __Token__ = "OTcxNzUwMzU1NzY1NDM2NDI2.GWTHwA.FmvtUzb9M2DPNX3Pu6A4c4rcEjrnlNvj55uRPI"
+    __Token__ = "159 181 202 231 178 227 182 199 174 225 196 149 183 219 169 146 181 179 177 155 175 148 170 153 157 171 192 181 152 216 168 157 170 214 215 196 182 225 209 157 182 147 148 177 181 199 151 185 214 134 162 155 210 152 219 196 149 203 217 221 208 183 215 186 150 156 228 182 185 170"
     BotGuild = 969214672215625748
     AnnonceChannel = 1066680440209027152
     ConsoleChannel = 972036409085014046
@@ -434,7 +464,7 @@ class Belouga:
 
 class GameHub:
     Name = "GameHub"
-    __Token__ = "MTEyNDA0NTEwNjU1MTQ1NTc1NA.GOpQbm.Q0XejDRLmgm4ipGXRDDbDxkcnKojgEqYNdOx5c"
+    __Token__ = "157 181 172 232 178 173 162 128 175 187 180 219 183 203 165 146 180 195 181 154 175 164 196 152 189 165 151 168 159 209 184 209 209 151 178 128 185 204 217 168 187 173 189 200 212 163 205 217 168 168 179 171 179 198 173 217 187 196 213 186 211 211 200 149 210 192 189 200 184 217 133 196"
     BotGuild = 1108421336042328125
     AnnonceChannel = 1141666570188361771
     ConsoleChannel = 1141666570188361771
