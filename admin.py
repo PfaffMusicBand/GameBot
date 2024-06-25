@@ -28,6 +28,8 @@ class Admin(commands.Cog):
     @commands.has_permissions(administrator = True)
     @app_commands.autocomplete(cmd = blackliste_autocompletion)
     async def blackliste(self, ctx: Context, member: discord.Member, cmd, permission: bool):
+        if cmd not in Botloader.Data.cmd_value:
+            return await ctx.reply("Clef non-valide", ephemeral=True)
         var_key = Botloader.Data.cmd_value[cmd]
         data = Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, cmd)
         if data is not None:
@@ -44,7 +46,7 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command(name="clear", help=f"Supprime les n derniers messages dans le canal.\nSyntaxe: `{Botloader.Bot.Prefix}clear [argument(int)]`")
     @commands.has_permissions(manage_messages=True)
-    async def clear(self, ctx: Context, amount):
+    async def clear(self, ctx: Context, amount: int):
         try:
             await ctx.channel.purge(limit=int(amount))
             return await ctx.send("Succès.", ephemeral=True)
