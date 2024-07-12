@@ -167,7 +167,8 @@ class Data:
         'rdm': 'rdm_commande_permission',
         'voca': 'voca_commande_permission',
         'vtts_l': 'vtts_direct_message_permission',
-        'execute': 'execute_command_permission'
+        'execute': 'execute_command_permission',
+        'blackliste_dm': 'blackliste_dm_member'
     }
 
     user_category = {
@@ -400,7 +401,6 @@ class Bot():
                 Data.update_user_conf(message.guild.id, message.author.id, 'actual_xp_level', new_level)
                 await message.reply(f"Félicitations, vous gagnez un niveau (niveau {new_level})!")
 
-
     def console(type, arg):
         startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
         print(f"[{startTime} {type}] {inspect.stack()[1].function}: {arg}")
@@ -455,7 +455,7 @@ class Belouga:
     ConsoleChannel = 972036409085014046
     MessageChannel = 1175569633357598742
     BugreportChannel = 1239839087888830466
-    Prefix = "BL"
+    Prefix = "$"
 
 class GameHub:
     Name = "GameHub"

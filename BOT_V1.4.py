@@ -5,16 +5,20 @@ import discord.ext
 import discord.ext.commands
 import Botloader
 import argparse
+import pytz
+import glob
 from random import randint
 from typing import Any
 from discord.ext import commands
 from datetime import datetime
 from gtts import gTTS
+from discord.ext.commands import Context
+
 from common import Common
 from privat import Privat
 from owner import Owner
 from admin import Admin
-from discord.ext.commands import Context
+from music import Music
 
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
@@ -30,17 +34,22 @@ statutpresence = ["you!", "cooked you!"]
 botversion = 1.4
 r = "n"
 
+
 class BotClient(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.command_descriptions = {}
 
     async def on_ready(self):
-        if self.get_guild(Botloader.Bot.BotGuild):
-            await self.add_cog(Privat(self))
-            await self.add_cog(Owner(self))
+        await self.add_cog(Privat(self), guild=Botloader.Bot.BotGuild)
+        await self.add_cog(Owner(self), guild=Botloader.Bot.BotGuild)
         await self.add_cog(Common(self))
         await self.add_cog(Admin(self))
+        try:
+            await self.add_cog(Music(self))
+        except Exception as e: print(e)
+        for command in bot.commands:
+            print(command.cog_name)
         Botloader.Bot.console("INFO", f'Logged in as {self.user} (ID: {self.user.id})')
         await self.versions(type="on_ready", ctx=None)
         await self.change_presence(status=discord.Status.online, activity=discord.Game("Chargement des cookis!"))
@@ -60,6 +69,7 @@ class BotClient(commands.Bot):
             if command.help:
                 self.command_descriptions[command.name] = command.help
         print("")
+
 
     async def versions(self, type, ctx: Context):
         if botversion == float(Botloader.version.recommanded):
@@ -122,13 +132,47 @@ class BotClient(commands.Bot):
                 ctx = Privat.ctx_mapping.get(interaction.user.id)
                 lang, nombre = Privat.voca_user_data.get(interaction.user.id, "").split(",")
                 return await Privat.test_voca_logic(self, ctx, lang, nombre)
-            if interaction.data["custom_id"] == "Spam":
+            if interaction.data["custom_id"] == "spam_dm":
+                b, guild, user, msg = interaction.data["values"][0].split("/|/")
+                if b == "y":
+                    data = Botloader.Data.get_user_conf(guild, interaction.user.id, Botloader.Data.cmd_value['blackliste_dm'])
+                    if data is None:
+                        Botloader.Data.insert_user_conf(guild, interaction.user.id, Botloader.Data.cmd_value['blackliste_dm'], user)
+                    elif user not in data:
+                        Botloader.Data.update_user_conf(guild, interaction.user.id, Botloader.Data.cmd_value['blackliste_dm'], data.append(user))
+                    title = "Le message a bien été signalé et le membre bloqué.\nSi vous avez d'autre problèmes, n'ésitez pas à nous contacter:\nsupport@gamebot.smaugue.lol"
+                    placeholder = "Signalé et Bloqué"
+                else: 
+                    title = "Le message a bien été signalé.\nSi vous avez d'autre problèmes, n'ésitez pas à nous contacter:\nsupport@gamebot.smaugue.lol"
+                    placeholder = "Signalé"
+                automod_channel_id = Botloader.Data.get_guild_conf(guild, 'automod_channel_report')
+                try:
+                    channel = bot.get_guild(int(guild)).get_channel(int(automod_channel_id))
+                except Exception as e:
+                    return await interaction.channel.send(f"Une erreur s'est produite: {e}. \n Veuillez contacter les administarteur du serveur don est issu le message ({ctx.guild})")
+                startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                embed = discord.Embed(title="Signalement de Spam en DM", description=startTime, color=discord.Color.brand_red())
+                embed.add_field(name="User", value=bot.get_user(int(user)).mention, inline=False)
+                embed.add_field(name="Target", value=interaction.user.mention, inline=False)
+                embed.add_field(name="Message", value=msg, inline=False)
+                embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
                 view = discord.ui.View()
-                item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Signaler un Spam", custom_id="dm_spam", disabled=True)
+                item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
+                view.add_item(item=item)
+                await channel.send(embed=embed,view=view)
+                view = discord.ui.View()
+                item = discord.ui.Select(
+                    custom_id='spam_dm',
+                    placeholder=placeholder,
+                    options=[
+                        discord.SelectOption(label="empty", value=f"empty"),
+                    ],
+                    disabled=True
+                )
                 view.add_item(item=item)
                 await interaction.message.edit(view=view)
-                embed = discord.Embed(title="**Signalement**", description="Le message a bien été signalé.", color=discord.Colour.red())
-                return await interaction.response.send_message(embed=embed)
+                embed = discord.Embed(title="**Signalement**", description=title, color=discord.Colour.red())
+                return await interaction.channel.send(embed=embed)
             if interaction.data["custom_id"] == "bugreport_correction" and interaction.user.id == Botloader.owner_permission.owner_id:
                 view = discord.ui.View()
                 item = discord.ui.Button(style=discord.ButtonStyle.gray, label="Corrigé", custom_id="bugreport_correction", disabled=True)
@@ -156,6 +200,9 @@ class BotClient(commands.Bot):
                 embed.set_field_at(index=3, name=embed.fields[3].name, value=f"Modéré par {interaction.user.mention}.", inline=embed.fields[1].inline)
                 embed.color = discord.Color.dark_red()
                 return await interaction.message.edit(embed=embed, view=view)
+            if interaction.data["custom_id"] == "test_1":
+                selected_option = interaction.data["values"][0]
+                await interaction.channel.send(selected_option)
 
     async def on_message(self, message: discord.Message):
         if message.author == self.user:
@@ -163,15 +210,14 @@ class BotClient(commands.Bot):
         blw, blws = Botloader.AutoMod.check_message(message.content)
         if len(blw) != 0:
             automod_channel_id = Botloader.Data.get_guild_conf(message.guild.id, 'automod_channel_report')
-            print(automod_channel_id)
             if automod_channel_id is not None:
-                channel = message.guild.get_channel(automod_channel_id)
+                channel = message.guild.get_channel(int(automod_channel_id))
                 if channel:
-                    startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
                     if isinstance(message.channel, discord.channel.DMChannel):
                         zone = "Signalement de langage offensant en DM."
                     else:
                         zone = "Signalement de langage offensant."
+                    startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
                     embed = discord.Embed(title=zone, description=startTime, color=discord.Color.brand_red())
                     embed.set_thumbnail(url=message.author.avatar.url)
                     embed.add_field(name="User", value=message.author.mention, inline=False)
@@ -295,7 +341,9 @@ async def on_command_error(ctx: Context, error):
     if isinstance(error, commands.CommandNotFound):
         return await ctx.reply("Command no found.", ephemeral=True)
     if isinstance(error, commands.MissingPermissions):
-        return await ctx.reply('Missiong permissions.', ephemeral=True)
+        return await ctx.reply('Missing permissions.', ephemeral=True)
+    if isinstance(error, discord.Forbidden):
+        return await ctx.reply('Missing permissions.', ephemeral=True)
     guild = bot.get_guild(Botloader.Bot.BotGuild)
     channel = guild.get_channel_or_thread(Botloader.Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug",description=f"Commande concernée `{command}`.",colour=discord.Colour.orange())

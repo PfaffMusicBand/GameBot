@@ -23,6 +23,7 @@ class Privat(commands.Cog):
     
     @commands.hybrid_command(name = "voca")
     @app_commands.autocomplete(lang = voca_autocompletion)
+    @commands.guild_only()
     async def testvoca(self, interaction: Context, lang: str, nombre: int):
         if Botloader.Data.get_user_conf(interaction.guild.id, interaction.author.id, Botloader.Data.cmd_value['voca']) == "1":
             return await Privat.test_voca_logic(self.bot, interaction, lang, nombre)
@@ -133,24 +134,38 @@ class Privat(commands.Cog):
 
     #spam commande
     @commands.hybrid_command(name="dm")
+    @commands.guild_only()
     async def dm(self, ctx: Context, mention: discord.User,*,msg):
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['dm']) == "1":
-            message = ctx.message
-            if len(message.attachments) > 1:
-                return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")
-            try:
-                channel = await mention.create_dm()
-            except discord.Forbidden: ctx.reply("Impossible d'envoyer le message.")
-            embed = discord.Embed(title = "**Message**", description = msg, color=discord.Colour.dark_magenta())
-            embed.set_author(name = ctx.author.name, icon_url = ctx.author.avatar)
-            view = discord.ui.View()
-            item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Signaler un Spam", custom_id= "Spam", disabled=False)
-            view.add_item(item=item)
-            if message.attachments :
-                for attachment in message.attachments:
-                    embed.set_image(url= attachment.url)
-                    await channel.send(embed=embed, view=view)
-            else:
-                await channel.send(embed=embed ,view=view)
-            return await ctx.reply("Succès", ephemeral=True) 
-        return await Botloader.Bot.on_refus_interaction(ctx)
+        member_blackliste = Botloader.Data.get_user_conf(ctx.guild.id, mention.id, Botloader.Data.cmd_value["blackliste_dm"])
+        if member_blackliste is not None:
+            if str(ctx.author.id) in member_blackliste:
+                return await ctx.reply(f"Le message a été exprécément refusé par {mention.mention}.")
+        if Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf["automod_channel"]):
+            if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['dm']) == "1":
+                message = ctx.message
+                if len(message.attachments) > 1:
+                    return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")
+                try:
+                    channel = await mention.create_dm()
+                except discord.Forbidden: ctx.reply("Impossible d'envoyer le message.", ephemeral=True)
+                embed = discord.Embed(title = "**Message**", description = msg, color=discord.Colour.dark_magenta())
+                embed.set_author(name = f"{ctx.author.name} (id:{ctx.author.id})", icon_url = ctx.author.avatar)
+                view = discord.ui.View()
+                item = discord.ui.Select(
+                custom_id='spam_dm',
+                placeholder="Signaler un Spam",
+                options=[
+                    discord.SelectOption(label="Signaler", value=f"n/|/{ctx.guild.id}/|/{ctx.author.id}/|/{msg}"),
+                    discord.SelectOption(label="Signaler et Bloquer (action irréversible)", value=f"y/|/{ctx.guild.id}/|/{ctx.author.id}/|/{msg}")
+                ]
+            )
+                view.add_item(item=item)
+                if message.attachments :
+                    for attachment in message.attachments:
+                        embed.set_image(url= attachment.url)
+                        await channel.send(embed=embed, view=view)
+                else:
+                    await channel.send(embed=embed ,view=view)
+                return await ctx.reply("Succès", ephemeral=True) 
+            return await Botloader.Bot.on_refus_interaction(ctx)
+        else: return await ctx.reply("Le serveur ne possède pas la configuration requise pour l'exécution de la commande.")

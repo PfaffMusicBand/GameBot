@@ -13,12 +13,12 @@ class Common(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cmd_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-            cmds = [command.name for command in self.bot.commands]
-            return [
-                    app_commands.Choice(name=cmd, value=cmd)
-                    for cmd in cmds if current.lower() in cmd.lower()
-                ]
+    async def cmd_autocompletion(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+        cmds = ['play', 'join', 'leave', 'stop', 'vtts', 'ftts', 'dm', 'execute']
+        return [
+            app_commands.Choice(name=cmd, value=cmd)
+            for cmd in cmds if current.lower() in cmd.lower()
+        ]
     
     async def lg_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
             lgs = ['fr','ja','de','en']
@@ -43,12 +43,9 @@ class Common(commands.Cog):
         view.add_item(item=item)
         await channel.send(embed=embed, view=view)
         await ctx.reply("Merci d'avoire signalé le bug! \n Si vous avez des question contactez nous: <support@gamebot.smaugue.lol>", ephemeral=True)
-
-    @commands.hybrid_command(name="mpt")
-    async def play(self, ctx: Context, filename: str):
-        await Botloader.Bot.play_audio(ctx,filename)
         
     @commands.hybrid_command(name="sayic", help = f"Permet de fair parler le bot dans un channel définit.")
+    @commands.guild_only()
     async def sayInChannel(self, ctx: Context, channel : discord.TextChannel, text):
         blw, blws = Botloader.AutoMod.check_message(text)
         if len(blw) != 0:
@@ -59,6 +56,7 @@ class Common(commands.Cog):
         await ctx.reply(f"Votre message a bien été envoyé dans #{channel}!")
 
     @commands.hybrid_command(name="say", help = f"Permet de fair parler le bot.")
+    @commands.guild_only()
     async def say(self, ctx: Context, text):
         blw, blws = Botloader.AutoMod.check_message(text)
         if len(blw) != 0:
@@ -69,6 +67,7 @@ class Common(commands.Cog):
 
     @commands.hybrid_command(name="vtts")
     @app_commands.autocomplete(lg = lg_autocompletion)
+    @commands.guild_only()
     async def vtts(self, ctx: Context, lg, *, text_to_speak: str):
         blw, blws = Botloader.AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
@@ -89,6 +88,7 @@ class Common(commands.Cog):
         
     @commands.hybrid_command(name="ftts")
     @app_commands.autocomplete(lg = lg_autocompletion)
+    @commands.guild_only()
     async def ftts(self, ctx: Context, lg, text_to_speak: str):
         blw, blws = Botloader.AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
@@ -109,6 +109,7 @@ class Common(commands.Cog):
 
         
     @commands.hybrid_command(name = "rdm")
+    @commands.guild_only()
     async def randome(self, ctx: Context, min: int, max: int):
         if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['rdm']) == "0":
             return await Botloader.Bot.on_refus_interaction(ctx)
@@ -124,20 +125,17 @@ class Common(commands.Cog):
         except Exception as e:
             Botloader.Bot.console("WARN", e)
 
-    @commands.command(name="join")
-    async def join(self, ctx: Context):
-        if ctx.voice_client is not None:
-            await ctx.send("Le bot est déjà connecté à un canal vocal.")
-            return
-        if ctx.author.voice is None:
-            await ctx.send("Vous devez être dans un canal vocal pour utiliser cette commande.")
-            return
-        channel = ctx.author.voice.channel
-        await channel.connect()
-
-    @commands.command(name="leave")
-    async def leave(self, ctx:Context):
-        if ctx.voice_client is None:
-            await ctx.send("Le bot n'est pas connecté à un canal vocal.")
-            return
-        await ctx.voice_client.disconnect()
+    @commands.command("test")
+    async def test(self, ctx: Context):
+        view = discord.ui.View()
+        item = discord.ui.Select(
+            custom_id='test_1',
+            placeholder="Sélectionnez une action...",
+            options=[
+                discord.SelectOption(label="Action 1", value="action1"),
+                discord.SelectOption(label="Action 2", value="action2"),
+                discord.SelectOption(label="Action 3", value="action3"),
+            ]
+        )
+        view.add_item(item)
+        await ctx.channel.send(view=view)

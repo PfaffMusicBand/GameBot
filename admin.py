@@ -27,6 +27,7 @@ class Admin(commands.Cog):
     @commands.hybrid_command(name="blackliste")
     @commands.has_permissions(administrator = True)
     @app_commands.autocomplete(cmd = blackliste_autocompletion)
+    @commands.guild_only()
     async def blackliste(self, ctx: Context, member: discord.Member, cmd, permission: bool):
         if cmd not in Botloader.Data.cmd_value:
             return await ctx.reply("Clef non-valide", ephemeral=True)
@@ -46,6 +47,7 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command(name="clear", help=f"Supprime les n derniers messages dans le canal.\nSyntaxe: `{Botloader.Bot.Prefix}clear [argument(int)]`")
     @commands.has_permissions(manage_messages=True)
+    @commands.guild_only()
     async def clear(self, ctx: Context, amount: int):
         try:
             await ctx.channel.purge(limit=int(amount))
@@ -56,6 +58,7 @@ class Admin(commands.Cog):
     @commands.hybrid_command(name="srvconf")
     @commands.has_permissions(administrator = True)
     @app_commands.autocomplete(parametre=srvconf_autocompletion)
+    @commands.guild_only()
     async def serverconf(self, ctx: Context, parametre: str, valeur: str):
         data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre])
         if data is not None:
@@ -71,6 +74,7 @@ class Admin(commands.Cog):
             return await ctx.reply(f"Erreur: {e}.")
     
     @commands.hybrid_command(name="execute")
+    @commands.guild_only()
     async def execute(self, ctx: Context,*,actions: str):
         if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['execute']) == "1":
             try:
