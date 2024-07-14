@@ -4,6 +4,7 @@ import spotipy
 import asyncio
 import os
 import Botloader
+from discord.ext.commands import Context
 from discord.ext import commands
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -47,11 +48,11 @@ class Music(commands.Cog):
         if len(self.queue) > 0:
             player = self.queue.pop(0)
             ctx.voice_client.play(player, after=lambda e:  asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
-            await ctx.send(f'Lecture de : {player.title}')
+            await ctx.channel.send(f'Lecture de : {player.title}')
             files.append(player.filename)
         else:
             ctx.voice_client.stop()
-            await ctx.send('La file d\'attente est vide.')
+            await ctx.channel.send('La file d\'attente est vide.')
             for file in files:
                 try:
                     os.remove(file)
@@ -62,13 +63,23 @@ class Music(commands.Cog):
 
     @commands.hybrid_command(name='join', help='Fait rejoindre le bot à un canal vocal')
     async def join(self, ctx):
-        if not ctx.message.author.voice:
-            await ctx.send(f'{ctx.message.author.name} n\'est pas connecté à un canal vocal.')
-            return
-        else:
-            channel = ctx.message.author.voice.channel
+        await Music.ljoin(self, ctx)
 
-        await channel.connect()
+    async def ljoin(self, ctx: Context,*,ir = "y"):
+        if not ctx.message.author.voice:
+            await ctx.send(f"Vous n'êtes pas connectez à un channel vocal.")
+            return False
+        channel = ctx.message.author.voice.channel
+        if ctx.voice_client:
+            if ctx.voice_client.is_playing() or len(self.queue) > 0:
+                await ctx.send("Le bot est déjà en cour d'utilisation.")
+                return False
+            else: await ctx.voice_client.disconnect()
+        await channel.connect(self_deaf=True)
+        if ir == "y":
+            await ctx.send(f'Connecté à {channel.name}.')
+        else: await ctx.channel.send(f'Connecté à {channel.name}.')
+        return True
 
     @commands.hybrid_command(name='leave', help='Fait quitter le bot du canal vocal')
     async def leave(self, ctx):
@@ -78,20 +89,21 @@ class Music(commands.Cog):
         await ctx.voice_client.disconnect()
 
     @commands.hybrid_command(name='play', help='Joue une musique à partir d\'une URL YouTube')
-    async def play(self, ctx, url):
-        if "https://" not in url:
-            url = await self.search_youtube(url)
-            if not url:
-                await ctx.send('Aucune vidéo trouvée pour cette recherche.')
-                return
+    async def play(self, ctx: Context, url):
+        if await Music.ljoin(self,ctx,ir="n") is False:
+            return
         async with ctx.typing():
+            if "https://" not in url:
+                url = await self.search_youtube(url)
+                if not url:
+                    await ctx.channel.send('Aucune vidéo trouvée pour cette recherche.')
+                    return
             player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
             if player is None:
-                await ctx.send('Erreur lors du téléchargement de la vidéo.')
+                await ctx.channel.send('Erreur lors du téléchargement de la vidéo.')
                 return
             self.queue.append(player)
             await ctx.send(f"{player.title} ajouté à la liste.")
-
         if not ctx.voice_client.is_playing():
             await self.play_next(ctx)
 

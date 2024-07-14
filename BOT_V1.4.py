@@ -48,8 +48,6 @@ class BotClient(commands.Bot):
         try:
             await self.add_cog(Music(self))
         except Exception as e: print(e)
-        for command in bot.commands:
-            print(command.cog_name)
         Botloader.Bot.console("INFO", f'Logged in as {self.user} (ID: {self.user.id})')
         await self.versions(type="on_ready", ctx=None)
         await self.change_presence(status=discord.Status.online, activity=discord.Game("Chargement des cookis!"))
