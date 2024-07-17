@@ -1,11 +1,15 @@
 import requests
 
-BOT_VERSION = "1.0.0"
-
 repo_owner = "smaugue"
 repo_name = "GameBot"
 file_path = "Version"
 token = "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"
+
+def get_version():
+    data = open("Version")
+    line = data.readline()
+    v, u, p = line.split("=")[1].strip().replace('"', '').replace("'", "").split(".")
+    return int(v), int(u), int(p)
 
 def get_github_version(repo_owner: str, repo_name: str, file_path: str, token: str):
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{file_path}"
@@ -25,16 +29,14 @@ def get_github_version(repo_owner: str, repo_name: str, file_path: str, token: s
     return None
 
 bv, bu, bp = get_github_version(repo_owner,repo_name, file_path, token)
+v,u,p = get_version()
+
 LASTER_VERSION = f"{bv}.{bu}.{bp}"
+BOT_VERSION = f"{v}.{u}.{p}"
 
 class Version:
 
-    def get_versions(version: str):
-        v, u, p = version.split(".")
-        return int(v), int(u), int(p)
-
     def cmp(version: str):
-        v,u,p = Version.get_versions(version)
         if v < bv:
             return "o"
         if v == bv and u < bu:
