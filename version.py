@@ -1,4 +1,5 @@
 import requests
+import base64
 
 repo_owner = "smaugue"
 repo_name = "GameBot"
@@ -18,7 +19,6 @@ def get_github_version():
     if response.status_code == 200:
         content = response.json().get('content', '')
         if content:
-            import base64
             decoded_content = base64.b64decode(content).decode('utf-8')
             for line in decoded_content.split("\n"):
                 if "VERSION" in line:
@@ -28,16 +28,17 @@ def get_github_version():
         response.raise_for_status()
     return None
 
-bv, bu, bp = get_github_version()
 v,u,p = get_version()
 
-LASTER_VERSION = f"{bv}.{bu}.{bp}"
+LASTER_VERSION = ""
 BOT_VERSION = f"{v}.{u}.{p}"
 
 class Version:
 
     def cmp(version: str):
-        get_github_version()
+        bv, bu, bp = get_github_version()
+        global LASTER_VERSION
+        LASTER_VERSION = f"{bv}.{bu}.{bp}"
         if v < bv:
             return "o"
         if v == bv and u < bu:
