@@ -1,1 +1,3 @@
-VERSION = "1.0.1"
+VERSION = "1.1.0"
+DATE = "17/07/24"
+PATCH = "Tri des Cogs et des Packages.\nAjout du Patch Note à la command version."
