@@ -5,7 +5,7 @@ def main():
     try:
         parser = argparse.ArgumentParser(description='Scripte Launcher.')
         parser.add_argument('--bot', type=str, default="Bot", help='Nom du bot à lancer')
-        parser.add_argument('--version', type=float, default=1.4, help='Version du scripte de bot actuel.')
+#        parser.add_argument('--version', type=float, default=1.4, help='Version du scripte de bot actuel.')
         parser.add_argument('--restart', type=str, default="n", help='Redémarage du bot y/n.')
         parser.add_argument('--pasword', type=str, default="pasword", help="Mot de passe")
         args = parser.parse_args()
@@ -53,31 +53,31 @@ Bot=>   """)
     if not bot.isdigit():
         print("Veuillez entrer un entier valide.")
         start()
-    print(f"""
-Bot: {liste[int(bot)]}
-    """)
-    version = input(f"""
-=========================================================
-|    Selectionnez une version:                          |
-|    _________________                                  |
-|   |[versions]|[code]|                                 |
-|   |   1.4    |  1.4 |                                 |
-|   '''''''''''''''''''                                 |
-=========================================================
-
-Version=>   """)
+#   print(f"""
+#Bot: {liste[int(bot)]}
+#    """)
+#    version = input(f"""
+#=========================================================
+#|    Selectionnez une version:                          |
+#|    _________________                                  |
+#|   |[versions]|[code]|                                 |
+#|   |   1.4    |  1.4 |                                 |
+#|   '''''''''''''''''''                                 |
+#=========================================================
+#
+#Version=>   """)
     pasword = input("Pasword =>")
 
     try:
-        launch_bot(bot_name = liste[int(bot)], bot_version=float(version), pasword=pasword)
+        launch_bot(bot_name = liste[int(bot)], pasword=pasword)
     except Exception as errors:
         print(f"Une erreur est survenue:{errors}")
         start()
     pass
 
-def launch_bot(bot_name, bot_version, pasword):
+def launch_bot(bot_name, pasword):
     try:
-        os.system(f"python BOT_V{bot_version}.py {bot_name} --pasword {pasword}")
+        os.system(f"python bot.py {bot_name} --pasword {pasword}")
     except Exception as errors:
         print(f"Une erreur est survenue : {errors}")
         start()

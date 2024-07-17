@@ -221,15 +221,6 @@ class Data:
         connection.commit()
         connection.close()
 
-
-    
-class version:
-    forward = [1.1, 1.2]
-    recommanded = 1.3
-    beta = 1.4
-    alpha = 1.5
-
-
 class Bot():
 
     queue = deque()

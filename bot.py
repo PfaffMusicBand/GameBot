@@ -19,6 +19,7 @@ from privat import Privat
 from owner import Owner
 from admin import Admin
 from music import Music
+from version import Version, bot_version
 
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
@@ -31,7 +32,6 @@ if __name__ == '__main__':
     main()
 
 statutpresence = ["you!", "cooked you!"]
-botversion = 1.4
 r = "n"
 
 
@@ -70,21 +70,26 @@ class BotClient(commands.Bot):
 
 
     async def versions(self, type, ctx: Context):
-        if botversion == float(Botloader.version.recommanded):
-            description, color, url = "Votre bot est à jour.", discord.Colour.green(), "https://cdn3.emoji.gg/emojis/2990_yes.png"
-        elif botversion < float(Botloader.version.recommanded):
-            description, color, url = "Attention : votre bot n'est plus à jour !", discord.Colour.from_rgb(250, 0, 0), "https://cdn3.emoji.gg/emojis/1465-x.png"
+        botversion = bot_version
+        if Version.check() == "j":
+            ctx.reply("nice")
         else:
-            description, color, url = "Attention : votre bot est en version bêta !", discord.Colour.orange(), "https://cdn3.emoji.gg/emojis/3235_warning2.png"
-        if type == "commande":
-            embed = discord.Embed(title="Notes de mise à jour", description=description, color=color)
-            embed.set_thumbnail(url=url)
-            embed.add_field(name="Version du bot :", value=botversion, inline=False)
-            embed.add_field(name="Version recommandée :", value=Botloader.version.recommanded, inline=False)
-            embed.add_field(name="Dernière version :", value=Botloader.version.recommanded, inline=False)
-            await ctx.channel.send(embed=embed)
-        if type == "on_ready":
-            Botloader.Bot.console("INFO", f'Logged in V{botversion}')
+            ctx.reply("somone false")
+    #    if botversion == float(Botloader.version.recommanded):
+    #        description, color, url = "Votre bot est à jour.", discord.Colour.green(), "https://cdn3.emoji.gg/emojis/2990_yes.png"
+    #    elif botversion < float(Botloader.version.recommanded):
+    #        description, color, url = "Attention : votre bot n'est plus à jour !", discord.Colour.from_rgb(250, 0, 0), "https://cdn3.emoji.gg/emojis/1465-x.png"
+    #    else:
+    #        description, color, url = "Attention : votre bot est en version bêta !", discord.Colour.orange(), "https://cdn3.emoji.gg/emojis/3235_warning2.png"
+    #    if type == "commande":
+    #        embed = discord.Embed(title="Notes de mise à jour", description=description, color=color)
+    #        embed.set_thumbnail(url=url)
+    #        embed.add_field(name="Version du bot :", value=botversion, inline=False)
+    #        embed.add_field(name="Version recommandée :", value=Botloader.version.recommanded, inline=False)
+    #        embed.add_field(name="Dernière version :", value=Botloader.version.recommanded, inline=False)
+    #        await ctx.channel.send(embed=embed)
+    #    if type == "on_ready":
+    #        Botloader.Bot.console("INFO", f'Logged in V{botversion}')
             
     async def help(self, ctx: Context, args = None):
         if not args:
@@ -359,4 +364,4 @@ async def on_command_error(ctx: Context, error):
 try:
     bot.run(Botloader.Bot.Token)
 except: print("Bad Pasword")
-os.system(f"python Launcher.py --bot {Botloader.Bot.Name} --version {botversion} --restart {r} --pasword {Botloader.Bot.Pasword}")
+os.system(f"python Launcher.py --bot {Botloader.Bot.Name} --restart {r} --pasword {Botloader.Bot.Pasword}")
