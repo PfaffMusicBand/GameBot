@@ -125,18 +125,3 @@ class Common(commands.Cog):
             await ctx.reply(embed=embed)
         except Exception as e:
             Botloader.Bot.console("WARN", e)
-
-    @commands.command("test")
-    async def test(self, ctx: Context):
-        view = discord.ui.View()
-        item = discord.ui.Select(
-            custom_id='test_1',
-            placeholder="Sélectionnez une action...",
-            options=[
-                discord.SelectOption(label="Action 1", value="action1"),
-                discord.SelectOption(label="Action 2", value="action2"),
-                discord.SelectOption(label="Action 3", value="action3"),
-            ]
-        )
-        view.add_item(item)
-        await ctx.channel.send(view=view)
