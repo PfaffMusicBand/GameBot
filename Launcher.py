@@ -5,12 +5,11 @@ def main():
     try:
         parser = argparse.ArgumentParser(description='Scripte Launcher.')
         parser.add_argument('--bot', type=str, default="Bot", help='Nom du bot à lancer')
-#        parser.add_argument('--version', type=float, default=1.4, help='Version du scripte de bot actuel.')
         parser.add_argument('--restart', type=str, default="n", help='Redémarage du bot y/n.')
         parser.add_argument('--pasword', type=str, default="pasword", help="Mot de passe")
         args = parser.parse_args()
         if args.restart.lower() == "y":
-            launch_bot(args.bot, args.version, args.pasword)
+            launch_bot(args.bot, args.pasword)
         else:
             start()
 
