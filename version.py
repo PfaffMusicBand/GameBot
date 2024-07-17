@@ -14,10 +14,11 @@ def get_version():
 
 v,u,p = get_version()
 
-LASTER_VERSION = ""
 BOT_VERSION = f"{v}.{u}.{p}"
 
 class Version:
+
+    LASTER_VERSION = ""
 
     def get_github_version():
         url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{file_path}"
@@ -37,8 +38,7 @@ class Version:
 
     def cmp(version: str):
         bv, bu, bp = Version.get_github_version()
-        global LASTER_VERSION
-        LASTER_VERSION = f"{bv}.{bu}.{bp}"
+        Version.LASTER_VERSION = f"{bv}.{bu}.{bp}"
         if v < bv:
             return "o"
         if v == bv and u < bu:

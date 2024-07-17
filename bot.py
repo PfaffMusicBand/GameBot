@@ -19,7 +19,7 @@ from privat import Privat
 from owner import Owner
 from admin import Admin
 from music import Music
-from version import Version, BOT_VERSION, LASTER_VERSION
+from version import Version, BOT_VERSION
 
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
@@ -80,7 +80,7 @@ class BotClient(commands.Bot):
             embed = discord.Embed(title="Notes de mise à jour", description=description, color=color)
             embed.set_thumbnail(url=url)
             embed.add_field(name="Version du bot :", value=BOT_VERSION, inline=False)
-            embed.add_field(name="Dernière version :", value=LASTER_VERSION, inline=False)
+            embed.add_field(name="Dernière version :", value=Version.LASTER_VERSION, inline=False)
             return await ctx.reply(embed=embed)
         if type == "on_ready":
             Botloader.Bot.console("INFO", f'Logged in V{BOT_VERSION}')
