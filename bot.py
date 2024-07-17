@@ -81,7 +81,7 @@ class BotClient(commands.Bot):
             embed.set_thumbnail(url=url)
             embed.add_field(name="Version du bot :", value=BOT_VERSION, inline=False)
             embed.add_field(name="Dernière version :", value=LASTER_VERSION, inline=False)
-            await ctx.channel.send(embed=embed)
+            await ctx.reply(embed=embed)
         if type == "on_ready":
             Botloader.Bot.console("INFO", f'Logged in V{BOT_VERSION}')
             
