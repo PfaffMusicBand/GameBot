@@ -13,7 +13,7 @@ from discord.ext import commands
 from datetime import datetime
 from gtts import gTTS
 from discord.ext.commands import Context
-
+from automod import AutoMod
 from common import Common
 from privat import Privat
 from owner import Owner
@@ -205,7 +205,7 @@ class BotClient(commands.Bot):
     async def on_message(self, message: discord.Message):
         if message.author == self.user:
             return
-        blw, blws = Botloader.AutoMod.check_message(message.content)
+        blw, blws = AutoMod.check_message(message.content)
         if len(blw) != 0:
             automod_channel_id = Botloader.Data.get_guild_conf(message.guild.id, 'automod_channel_report')
             if automod_channel_id is not None:

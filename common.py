@@ -8,6 +8,7 @@ from discord.ext.commands import Context
 from gtts import gTTS
 from random import randint
 from typing import List
+from automod import AutoMod
 
 class Common(commands.Cog):
     def __init__(self, bot):
@@ -47,7 +48,7 @@ class Common(commands.Cog):
     @commands.hybrid_command(name="sayic", help = f"Permet de fair parler le bot dans un channel définit.")
     @commands.guild_only()
     async def sayInChannel(self, ctx: Context, channel : discord.TextChannel, text):
-        blw, blws = Botloader.AutoMod.check_message(text)
+        blw, blws = AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
         if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['sayic']) == "0":
@@ -58,7 +59,7 @@ class Common(commands.Cog):
     @commands.hybrid_command(name="say", help = f"Permet de fair parler le bot.")
     @commands.guild_only()
     async def say(self, ctx: Context, text):
-        blw, blws = Botloader.AutoMod.check_message(text)
+        blw, blws = AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
         if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['say']) == "0":
@@ -69,7 +70,7 @@ class Common(commands.Cog):
     @app_commands.autocomplete(lg = lg_autocompletion)
     @commands.guild_only()
     async def vtts(self, ctx: Context, lg, *, text_to_speak: str):
-        blw, blws = Botloader.AutoMod.check_message(text_to_speak)
+        blw, blws = AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
         if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['vtts']) == "0":
@@ -90,7 +91,7 @@ class Common(commands.Cog):
     @app_commands.autocomplete(lg = lg_autocompletion)
     @commands.guild_only()
     async def ftts(self, ctx: Context, lg, text_to_speak: str):
-        blw, blws = Botloader.AutoMod.check_message(text_to_speak)
+        blw, blws = AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
         if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['ftts']) == "0":
