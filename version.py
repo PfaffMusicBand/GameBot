@@ -11,7 +11,7 @@ def get_version():
     v, u, p = line.split("=")[1].strip().replace('"', '').replace("'", "").split(".")
     return int(v), int(u), int(p)
 
-def get_github_version(repo_owner: str, repo_name: str, file_path: str, token: str):
+def get_github_version():
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{file_path}"
     headers = {"Authorization": f"token {token}"}
     response = requests.get(url, headers=headers)
@@ -28,7 +28,7 @@ def get_github_version(repo_owner: str, repo_name: str, file_path: str, token: s
         response.raise_for_status()
     return None
 
-bv, bu, bp = get_github_version(repo_owner,repo_name, file_path, token)
+bv, bu, bp = get_github_version()
 v,u,p = get_version()
 
 LASTER_VERSION = f"{bv}.{bu}.{bp}"
@@ -37,6 +37,7 @@ BOT_VERSION = f"{v}.{u}.{p}"
 class Version:
 
     def cmp(version: str):
+        get_github_version()
         if v < bv:
             return "o"
         if v == bv and u < bu:
