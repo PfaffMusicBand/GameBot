@@ -245,7 +245,6 @@ class BotClient(commands.Bot):
         ctx = await bot.get_context(message)
         if message.content in data:
             executor = Botloader.Data.get_guild_conf(message.guild.id, message.content)
-            print(executor)
             try:
                 action_list = parse_actions(ctx, executor)
                 for action in action_list:

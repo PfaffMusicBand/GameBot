@@ -7,7 +7,7 @@ file_path = "Version"
 token = "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"
 
 def get_version():
-    data = open("Version")
+    data = open("Version", encoding='utf-8')
     lines = data.readlines()
     for line in lines:
         if "VERSION" in line:

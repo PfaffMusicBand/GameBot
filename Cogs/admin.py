@@ -89,16 +89,19 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command(name="create_command")
     @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def create_command(self, ctx: commands.Context, prefix: str, name: str):
         # Init
+        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'])
+        if data and len(data) > 0:
+            data = data.split("\n")
+            if len(data) > 4:
+                return await ctx.reply("Vous avez atteins le nombre maximum de commande custom.")
         executore = "Start{}"
         embed = discord.Embed(title="**Commande Personnalisée**", description=name, color=discord.Colour.dark_magenta())
         embed.add_field(name="Prefixe", value=prefix)
         bot = self.bot
         command_name = f"{prefix}{name}"
-        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'])
-        if data and len(data) > 0:
-            data = data.split("\n")
         # Button
         class ActionSelector(discord.ui.View):
             def __init__(self, bot, timeout=60):
@@ -176,6 +179,9 @@ class Admin(commands.Cog):
                 if not self.ok_button_disabled:
                     self.ok_button_disabled = True
                     button.disabled = True
+                    for item in self.children:
+                        if isinstance(item, discord.ui.Button):
+                            item.disabled = True
                     self.embed.add_field(name="Executor:", value=self.executore, inline=False)
                     await interaction.edit_original_response(embed=self.embed, view=self)
                     if self.data:
@@ -192,7 +198,18 @@ class Admin(commands.Cog):
                         print(self.executore)
                         Botloader.Data.insert_guild_conf(ctx.guild.id,command_name, self.executore)
                         return await ctx.send('Enregistré')
-
-        # Suite
         view = ActionSelector(self.bot)
         await ctx.send(embed=embed, view=view)
+    
+    @commands.hybrid_command(name="custom_commands")
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def custom_commands(self, ctx: commands.Context):
+        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'])
+        embed = discord.Embed(title="**Liste des Commandes Personnalisées**", description="Liste des commandes personnalisées du serveur.", color=discord.Colour.dark_magenta())
+        if data and len(data) > 0:
+            data = data.split("\n")
+            for command in data:
+                embed.add_field(name=command, value=Botloader.Data.get_guild_conf(ctx.guild.id, command), inline=False)
+        else: embed.add_field(name="Aucunne commande custom disponible pour ce serveur.", value="Créez en avec `/create_command <prefix> <name>`.", inline=False)
+        return await ctx.reply(embed=embed)

@@ -1,3 +1,3 @@
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 DATE = "18/07/24"
-PATCH = "Ajout de la command /create_command:\nSendImage et SendMessage disponible."
+PATCH = "Command `create_comand`:\n-Désactivation des boutons non utilisé lors de l'enregistrement.\n\n Ajout de `custom_commands` pour visualiser les commands customs du serveur.\n\nPatch Not:\n-Ouverture en utf-8 pour capter les caractères d'échappement."
