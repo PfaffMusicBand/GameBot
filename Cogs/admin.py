@@ -2,6 +2,7 @@ import discord
 import asyncio
 import aiohttp
 from Packages import Botloader
+from discord.ui import View, Select
 from discord.ext import commands
 from discord.ext.commands import Context
 from discord import app_commands
@@ -203,13 +204,79 @@ class Admin(commands.Cog):
     
     @commands.hybrid_command(name="custom_commands")
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @commands.has_permissions(administrator=True)
     async def custom_commands(self, ctx: commands.Context):
+        bot = self.bot
         data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'])
-        embed = discord.Embed(title="**Liste des Commandes Personnalisées**", description="Liste des commandes personnalisées du serveur.", color=discord.Colour.dark_magenta())
+        embed = discord.Embed(title="**Liste des Commandes Personnalisées**",description="Liste des commandes personnalisées du serveur.",color=discord.Colour.dark_magenta())
+        commands_list = []
         if data and len(data) > 0:
             data = data.split("\n")
             for command in data:
+                commands_list.append(command)
                 embed.add_field(name=command, value=Botloader.Data.get_guild_conf(ctx.guild.id, command), inline=False)
-        else: embed.add_field(name="Aucunne commande custom disponible pour ce serveur.", value="Créez en avec `/create_command <prefix> <name>`.", inline=False)
-        return await ctx.reply(embed=embed)
+        else:
+            embed.add_field(name="Aucune commande custom disponible pour ce serveur.",value="Créez en avec `/create_command <prefix> <name>`.",inline=False)
+
+        class CommandSelect(Select):
+            def __init__(self, commands):
+                options = [discord.SelectOption(label=cmd, description=f"Select {cmd}") for cmd in commands]
+                super().__init__(placeholder="Sélectionnez une commande", min_values=1, max_values=1, options=options)
+                self.selected_command = None
+            async def callback(self, interaction: discord.Interaction):
+                self.selected_command = self.values[0]
+                self.view.stop()
+        class CommandSelectView(View):
+            def __init__(self, commands, timeout=60):
+                super().__init__(timeout=timeout)
+                self.command_select = CommandSelect(commands)
+                self.add_item(self.command_select)
+            async def on_timeout(self):
+                for item in self.children:
+                    item.disabled = True
+                await self.message.edit(view=self)
+        if commands_list:
+            view = CommandSelectView(commands_list)
+            message = view.message = await ctx.reply(embed=embed, view=view)
+            await view.wait()
+            selected_command = view.command_select.selected_command
+            if selected_command:
+                class ActionSelector(View):
+                    def __init__(self, bot, selected_command, timeout=60):
+                        super().__init__(timeout=timeout)
+                        self.bot = bot
+                        self.selected_command = selected_command
+                        self.embed = embed
+                        self.data = data
+                    @discord.ui.button(style=discord.ButtonStyle.red, label=f"Supprimer {selected_command}", custom_id="delete_command")
+                    async def delete_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+                        button, interaction = interaction, button
+                        button.disabled = True
+                        await interaction.edit_original_response(embed=self.embed, view=self)
+                        await ctx.reply(f"Confirmez la suppression de `{self.selected_command}` avec `delete` ou annulez avec `cancel`.", ephemeral=True)
+                        try:
+                            user_message = await bot.wait_for(
+                                "message",
+                                timeout=60,
+                                check=lambda m: m.author == interaction.user and m.channel == interaction.channel
+                            )
+                            if user_message.content.lower() == "delete":
+                                data = self.data.remove(selected_command)
+                                data_str = "\n".join(self.data)
+                                Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'], data_str)
+                                Botloader.Data.delete_guild_conf(ctx.guild.id, selected_command)
+                                await user_message.reply(f"La commande `{self.selected_command}` a été supprimée.")
+                                await user_message.delete()
+                            elif user_message.content.lower() == "cancel":
+                                await user_message.reply("Suppression annulée.")
+                                await user_message.delete()
+                            else:
+                                await user_message.reply("Commande non reconnue. Annulation de la suppression.")
+                                await user_message.delete()
+                        except asyncio.TimeoutError:
+                            await ctx.send("Temps écoulé. Veuillez réessayer.")
+                await message.edit(embed=embed, view=ActionSelector(self, selected_command))
+            else:
+                await ctx.send("Temps écoulé. Veuillez réessayer.")
+        else:
+            await ctx.reply(embed=embed)

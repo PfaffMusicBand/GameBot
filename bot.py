@@ -77,6 +77,7 @@ class BotClient(commands.Bot):
         check = Version.check()
         if check == "j":
             description, color, url = "Votre bot est à jour.", discord.Colour.green(), "https://cdn3.emoji.gg/emojis/2990_yes.png"
+            date, patch = Version.get_patch()
         elif check == "o":
             description, color, url = "Attention : votre bot n'est plus à jour !", discord.Colour.from_rgb(250, 0, 0), "https://cdn3.emoji.gg/emojis/1465-x.png"
             date, patch = Version.get_patch()
@@ -88,7 +89,7 @@ class BotClient(commands.Bot):
             embed.add_field(name="Version du bot :", value=BOT_VERSION, inline=False)
             embed.add_field(name="Dernière version :", value=Version.LASTER_VERSION, inline=False)
             if patch:
-                embed.add_field(name=f"Patch Note {date}:", value=patch, inline=False)
+                embed.add_field(name=f"Patch Note {date} (dernière version):", value=patch, inline=False)
             return await ctx.reply(embed=embed)
 
     async def help(self, ctx: Context, args = None):

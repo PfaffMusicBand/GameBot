@@ -40,10 +40,13 @@ class Version:
         date = "-/-/-"
         patch = "Non renseigné..."
         for line in decoded_content.split("\n"):
+            print(list(decoded_content))
             if "DATE" in line:
                 date = line.split("=")[1].strip().replace('"', '').replace("'", "")
             if "PATCH" in line:
-                patch = line.split("=")[1].strip().replace('"', '').replace("'", "")
+                patch = line.split("=")[1].strip().replace('"', '').replace("'", "").replace("\\n","\n").replace("\\t","\t")
+                print("lol\ntest")
+                print(list(patch))
         return date, patch
 
 

@@ -1,3 +1,3 @@
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 DATE = "18/07/24"
-PATCH = "Command `create_comand`:\n-Désactivation des boutons non utilisé lors de l'enregistrement.\n\n Ajout de `custom_commands` pour visualiser les commands customs du serveur.\n\nPatch Not:\n-Ouverture en utf-8 pour capter les caractères d'échappement."
+PATCH = "Command `create_comand`:\n\t-Désactivation des boutons non utilisés lors de l'enregistrement.\n\nCommand `custom_commands`:\n\t-Boutton de supression des Command.\n\nPatch Note:\n\t-Correction caractères d'échappement."
