@@ -1,3 +1,3 @@
 VERSION = "1.2.2"
 DATE = "18/07/24"
-PATCH = "Command `create_comand`:\n\t-Désactivation des boutons non utilisés lors de l'enregistrement.\n\nCommand `custom_commands`:\n\t-Boutton de supression des Command.\n\nPatch Note:\n\t-Correction caractères d'échappement."
+PATCH = "Commande `create_comand`:\n\t-Désactivation des bouttons non utilisés lors de l'enregistrement.\n\nCommand `custom_command`:\n\t-Boutton de suppression des commandes.\n\nPatch Note:\n\t-Correction carractères d'échappement."
