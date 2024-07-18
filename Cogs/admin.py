@@ -252,6 +252,9 @@ class Admin(commands.Cog):
                     async def delete_button(self, button: discord.ui.Button, interaction: discord.Interaction):
                         button, interaction = interaction, button
                         button.disabled = True
+                        for item in self.children:
+                            if isinstance(item, discord.ui.Button):
+                                item.disabled = True
                         await interaction.edit_original_response(embed=self.embed, view=self)
                         await ctx.reply(f"Confirmez la suppression de `{self.selected_command}` avec `delete` ou annulez avec `cancel`.", ephemeral=True)
                         try:
@@ -261,7 +264,7 @@ class Admin(commands.Cog):
                                 check=lambda m: m.author == interaction.user and m.channel == interaction.channel
                             )
                             if user_message.content.lower() == "delete":
-                                data = self.data.remove(selected_command)
+                                self.data.remove(selected_command)
                                 data_str = "\n".join(self.data)
                                 Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'], data_str)
                                 Botloader.Data.delete_guild_conf(ctx.guild.id, selected_command)
