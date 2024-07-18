@@ -1,3 +1,4 @@
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 DATE = "18/07/24"
-PATCH = "Commande `create_comand`:\n\t-Désactivation des bouttons non utilisés lors de l'enregistrement.\n\nCommand `custom_command`:\n\t-Boutton de suppression des commandes.\n\nPatch Note:\n\t-Correction carractères d'échappement."
+PATCH = "Commande `custom_commands`:\n-Ajout d'un boutton d'annulation."
+OLD_PATCH = "Commande `create_comand`:\n\t-Désactivation des bouttons non utilisés lors de l'enregistrement.\n\nCommand `custom_command`:\n\t-Boutton de suppression des commandes.\n\nPatch Note:\n\t-Correction carractères d'échappement."

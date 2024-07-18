@@ -267,14 +267,25 @@ class Admin(commands.Cog):
                                 Botloader.Data.delete_guild_conf(ctx.guild.id, selected_command)
                                 await user_message.reply(f"La commande `{self.selected_command}` a été supprimée.")
                                 await user_message.delete()
+                                return
                             elif user_message.content.lower() == "cancel":
                                 await user_message.reply("Suppression annulée.")
                                 await user_message.delete()
+                                return
                             else:
                                 await user_message.reply("Commande non reconnue. Annulation de la suppression.")
                                 await user_message.delete()
+                                return
                         except asyncio.TimeoutError:
-                            await ctx.send("Temps écoulé. Veuillez réessayer.")
+                            return await ctx.send("Temps écoulé. Veuillez réessayer.")
+                    @discord.ui.button(style=discord.ButtonStyle.gray, label="Annuler", custom_id="ok")
+                    async def ok_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+                        button, interaction = interaction, button
+                        button.disabled = True
+                        for item in self.children:
+                            if isinstance(item, discord.ui.Button):
+                                item.disabled = True
+                        return await interaction.edit_original_response(embed=self.embed, view=self)
                 await message.edit(embed=embed, view=ActionSelector(self, selected_command))
             else:
                 await ctx.send("Temps écoulé. Veuillez réessayer.")

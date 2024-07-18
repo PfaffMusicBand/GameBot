@@ -89,7 +89,7 @@ class BotClient(commands.Bot):
             embed.add_field(name="Version du bot :", value=BOT_VERSION, inline=False)
             embed.add_field(name="Dernière version :", value=Version.LASTER_VERSION, inline=False)
             if patch:
-                embed.add_field(name=f"Patch Note {date} (dernière version):", value=patch, inline=False)
+                embed.add_field(name=f"Patch Note {date} (dernière version stable):", value=patch, inline=False)
             return await ctx.reply(embed=embed)
 
     async def help(self, ctx: Context, args = None):
