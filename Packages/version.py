@@ -43,7 +43,7 @@ class Version:
             if "DATE" in line:
                 date = line.split("=")[1].strip().replace('"', '').replace("'", "")
             if "PATCH" in line:
-                patch = line.split("=")[1].strip().replace('"', '').replace("'", "").replace("\\n","\n").replace("\\t","\t")
+                patch = line.split("=")[1].strip().replace('"', '').replace("\\n","\n").replace("\\t","\t")
         return date, patch
 
 
