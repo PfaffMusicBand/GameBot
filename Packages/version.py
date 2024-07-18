@@ -57,17 +57,9 @@ class Version:
     def cmp(version: str):
         bv, bu, bp = Version.get_github_version()
         Version.LASTER_VERSION = f"{bv}.{bu}.{bp}"
-        if v < bv:
+        if v < bv or v == bv and u < bu or v == bv and u == bu and p < bp:
             return "o"
-        if v == bv and u < bu:
-            return "o"
-        if v == bv and u == bu and p < bp:
-            return "o"
-        if v > bv:
-            return "b"
-        if v == bv and u > bu:
-            return "b"
-        if v == bv and u == bu and p > bp:
+        if v > bv or v == bv and u > bu or v == bv and u == bu and p > bp:
             return "b"
         return "j"
     

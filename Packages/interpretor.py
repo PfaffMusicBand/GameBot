@@ -42,37 +42,46 @@ class SendImageFromURLAction:
     def __init__(self, url):
         self.url = url
     async def execute(self, ctx):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.url) as response:
-                if response.status == 200:
-                    data = await response.read()
-                    with open('temp_image.png', 'wb') as f:
-                        f.write(data)
-                    await ctx.send(file=discord.File('temp_image.png'))
-                    os.remove('temp_image.png')
-                else:
-                    await ctx.send('Failed to retrieve image from URL.')
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.url) as response:
+                    if response.status == 200:
+                        data = await response.read()
+                        with open('temp_image.png', 'wb') as f:
+                            f.write(data)
+                        await ctx.send(file=discord.File('temp_image.png'))
+                        os.remove('temp_image.png')
+                    else:
+                        await ctx.send('Failed to retrieve image from URL.')
+        except: print("sa pue la merde")
 
-def parse_actions(actions: str):
+def parse_actions(ctx, actions: str):
     action_list = []
     actions = actions.strip()
     
-    if '&' in actions:
-        action_strs = actions.split('&')
+    if '}&' in actions:
+        action_strs = actions.split('}&')
     else:
         action_strs = [actions]
 
     def check_secondary(content: str):
-        matches = re.findall(r'Calc\[(.*?)\]', content)
-        for calc_expression in matches:
+        calc_matches = re.findall(r'Calc\[(.*?)\]', content)
+        mention_matches = re.findall(r'@Mention', content)
+        for calc_expression in calc_matches:
             try:
                 result = eval(calc_expression)
                 content = content.replace(f'Calc[{calc_expression}]', str(result))
             except Exception as e:
                 Botloader.Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
+        for mention in mention_matches:
+            try:
+                content = content.replace(f'@Mention', ctx.author.mention)
+            except Exception as e:
+                Botloader.Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
         return content
 
     for action_str in action_strs:
+        action_str = action_str + '}'
         send_message_match = re.match(r'SendMessage\{(.*?)\}', action_str)
         generate_mp3_match = re.match(r'GenerateMP3\{(.*?)\}', action_str)
         create_role_match = re.match(r'CreateRole\{(.*?)\}', action_str)

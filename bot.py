@@ -20,6 +20,7 @@ from Cogs.owner import Owner
 from Cogs.admin import Admin
 from Cogs.music import Music
 from Packages.version import Version, BOT_VERSION
+from Packages.interpretor import parse_actions
 
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
@@ -41,8 +42,8 @@ class BotClient(commands.Bot):
         self.command_descriptions = {}
 
     async def on_ready(self):
-        await self.add_cog(Privat(self), guild=Botloader.Bot.BotGuild)
-        await self.add_cog(Owner(self), guild=Botloader.Bot.BotGuild)
+        await self.add_cog(Privat(self), guild=Botloader.BetaBelouga.BotGuild)
+        await self.add_cog(Owner(self), guild=Botloader.BetaBelouga.BotGuild)
         await self.add_cog(Common(self))
         await self.add_cog(Admin(self))
         try:
@@ -238,8 +239,21 @@ class BotClient(commands.Bot):
                         await channel.send("||<@575746878583472128>||||<@724996627366019133>||", embed=embed, view=view)
                     else:
                         await channel.send(embed=embed, view=view)
+        data = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guild_conf['command_name'])
+        if data and len(data) > 0:
+            data = data.split("\n")
+        ctx = await bot.get_context(message)
+        if message.content in data:
+            executor = Botloader.Data.get_guild_conf(message.guild.id, message.content)
+            print(executor)
+            try:
+                action_list = parse_actions(ctx, executor)
+                for action in action_list:
+                    await action.execute(ctx)
+            except Exception as e:
+                await ctx.send(f"Error: {str(e)}")
+        #lvtts
         if message.channel.id == 1242185337053380738:
-            ctx = await bot.get_context(message)
             if Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.cmd_value['vtts_l']) != "1":
                 await Botloader.Bot.on_refus_interaction(ctx)
             else:

@@ -51,7 +51,8 @@ class Data:
     guild_conf = {
         'xp_message_by_character': 'xp_by_message_reward',
         'xp_vocal_by_minute': 'xp_by_vocal_reward',
-        'automod_channel': 'automod_channel_report'
+        'automod_channel': 'automod_channel_report',
+        'command_name': 'extra_command_name',
     }
 
     def __init__(self, db_path):

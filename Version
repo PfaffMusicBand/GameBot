@@ -1,3 +1,3 @@
-VERSION = "1.1.1"
-DATE = "17/07/24"
-PATCH = "Requirments.txt ajouté."
+VERSION = "1.2.0"
+DATE = "18/07/24"
+PATCH = "Ajout de la command /create_command:\nSendImage et SendMessage disponible."
