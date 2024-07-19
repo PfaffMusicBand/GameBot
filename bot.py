@@ -3,7 +3,7 @@ import asyncio
 import os
 import discord.ext
 import discord.ext.commands
-from Packages import Botloader
+from Packs import Botloader
 import argparse
 import pytz
 import glob
@@ -13,14 +13,14 @@ from discord.ext import commands
 from datetime import datetime
 from gtts import gTTS
 from discord.ext.commands import Context
-from Packages.automod import AutoMod
+from Packs.automod import AutoMod
 from Cogs.common import Common
 from Cogs.privat import Privat
 from Cogs.owner import Owner
 from Cogs.admin import Admin
 from Cogs.music import Music
-from Packages.version import Version, BOT_VERSION
-from Packages.interpretor import parse_actions
+from Packs.version import Version, BOT_VERSION
+from Packs.interpretor import parse_actions
 
 def main():
     parser = argparse.ArgumentParser(description='Scripte Bot V1.2')
