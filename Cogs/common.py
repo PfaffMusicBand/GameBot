@@ -1,5 +1,5 @@
 import discord
-from Packages import Botloader
+from Packs import Botloader
 import asyncio
 import os
 from discord import app_commands
@@ -8,7 +8,7 @@ from discord.ext.commands import Context
 from gtts import gTTS
 from random import randint
 from typing import List
-from Packages.automod import AutoMod
+from Packs.automod import AutoMod
 
 class Common(commands.Cog):
     def __init__(self, bot):

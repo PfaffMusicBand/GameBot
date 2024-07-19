@@ -1,5 +1,5 @@
 import discord
-from Packages import Botloader
+from Packs import Botloader
 import asyncio
 from discord.ext import commands
 from discord.ext.commands import Context

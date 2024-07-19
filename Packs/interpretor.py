@@ -1,7 +1,7 @@
 import discord
 import os
 import re
-from Packages import Botloader
+from Packs import Botloader
 import aiohttp
 from gtts import gTTS
 from datetime import datetime

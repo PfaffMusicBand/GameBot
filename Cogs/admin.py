@@ -1,13 +1,13 @@
 import discord
 import asyncio
 import aiohttp
-from Packages import Botloader
+from Packs import Botloader
 from discord.ui import View, Select
 from discord.ext import commands
 from discord.ext.commands import Context
 from discord import app_commands
 from typing import List
-from Packages.interpretor import parse_actions
+from Packs.interpretor import parse_actions
 
 class Admin(commands.Cog):
     def __init__(self, bot):

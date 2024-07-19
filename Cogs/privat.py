@@ -1,6 +1,6 @@
 import discord
 import os
-from Packages import Botloader
+from Packs import Botloader
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
