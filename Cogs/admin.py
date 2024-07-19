@@ -48,6 +48,45 @@ class Admin(commands.Cog):
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
 
+#    @commands.hybrid_command(name="permission")
+#    @commands.has_permissions(administrator = True)
+#    @app_commands.autocomplete(cmd = blackliste_autocompletion)
+#    @commands.guild_only()
+#    async def permission(self, ctx: Context, member: discord.member):
+#        bot = self.bot
+#        embed = discord.Embed(title="**Permission du membre:**",description="Permissions accordées au membre.",color=discord.Colour.dark_magenta())
+#        commands_list = []
+#        data = Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, 'cmd')
+#        if data and len(data) > 0:
+#            data = data.split("\n")
+#            for command in data:
+#                commands_list.append(command)
+#                embed.add_field(name=command, value=Botloader.Data.get_guild_conf(ctx.guild.id, command), inline=False)
+#        else:
+#            embed.add_field(name="Aucune commande custom disponible pour ce serveur.",value="Créez en avec `/create_command <prefix> <name>`.",inline=False)
+#
+#        class CommandSelect(Select):
+#            def __init__(self, commands):
+#                options = [discord.SelectOption(label=cmd, description=f"Select {cmd}") for cmd in commands]
+#                super().__init__(placeholder="Sélectionnez une commande", min_values=1, max_values=1, options=options)
+#                self.selected_command = None
+#            async def callback(self, interaction: discord.Interaction):
+#                self.selected_command = self.values[0]
+#                self.view.stop()
+#        class CommandSelectView(View):
+#            def __init__(self, commands, timeout=60):
+#                super().__init__(timeout=timeout)
+#                self.command_select = CommandSelect(commands)
+#                self.add_item(self.command_select)
+#            async def on_timeout(self):
+#                for item in self.children:
+#                    item.disabled = True
+#                await self.message.edit(view=self)
+#        if commands_list:
+#            view = CommandSelectView(commands_list)
+#            message = view.message = await ctx.reply(embed=embed, view=view)
+#            await view.wait()
+
     @commands.hybrid_command(name="clear", help=f"Supprime les n derniers messages dans le canal.\nSyntaxe: `{Botloader.Bot.Prefix}clear [argument(int)]`")
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()

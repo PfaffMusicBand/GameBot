@@ -51,7 +51,7 @@ class Common(commands.Cog):
         blw, blws = AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['sayic']) == "0":
+        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['sayic']) != "1":
             return await Botloader.Bot.on_refus_interaction(ctx)
         await channel.send(text)
         await ctx.reply(f"Votre message a bien été envoyé dans #{channel}!")
