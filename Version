@@ -1,4 +1,5 @@
-VERSION = "1.2.3"
-DATE = "18/07/24"
-PATCH = "Commande `custom_commands`:\n-Ajout d'un boutton d'annulation."
+VERSION = "1.2.4"
+DATE = "19/07/24"
+PATCH = "Commande `play`:\n-Ajout de la lecture de play-listes et tracks Spotifi + play-listes Youtube."
+OLD = "Commande `custom_commands`:\n-Ajout d'un boutton d'annulation."
 OLD = "Commande `create_comand`:\n\t-Désactivation des bouttons non utilisés lors de l'enregistrement.\n\nCommand `custom_command`:\n\t-Boutton de suppression des commandes.\n\nPatch Note:\n\t-Correction carractères d'échappement."

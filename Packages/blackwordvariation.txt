@@ -9,7 +9,7 @@ aun@onn
 au,eau@o
 aein,ein,un@ain
 one@onne
-ase,aseux@asse
+ase,ace,aseux@asse
 cke,ke,kce,ck,kc,kk@que
 eux,eix,eu@e,u
 on@onn
@@ -17,4 +17,5 @@ bze@bz
 uc,uk,uque@uck
 an@en
 uta@ute
+as@asse
 tt@t

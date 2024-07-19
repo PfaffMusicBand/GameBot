@@ -44,23 +44,6 @@ class Music(commands.Cog):
         self.bot = bot
         self.queue = []
 
-    async def play_next(self, ctx):
-        if len(self.queue) > 0:
-            player = self.queue.pop(0)
-            ctx.voice_client.play(player, after=lambda e:  asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
-            await ctx.channel.send(f'Lecture de : {player.title}')
-            files.append(player.filename)
-        else:
-            ctx.voice_client.stop()
-            await ctx.channel.send('La file d\'attente est vide.')
-            for file in files:
-                try:
-                    os.remove(file)
-                    del(files[0])
-                    Botloader.Bot.console("INFO", f"File delete: {file}")
-                except Exception as e: Botloader.Bot.console("WARN", f"Error: {e}")
-
-
     @commands.hybrid_command(name='join', help='Fait rejoindre le bot à un canal vocal')
     async def join(self, ctx):
         await Music.ljoin(self, ctx)
@@ -74,6 +57,8 @@ class Music(commands.Cog):
             if ctx.voice_client.is_playing() or len(self.queue) > 0:
                 await ctx.send("Le bot est déjà en cour d'utilisation.")
                 return False
+            if ctx.voice_client.channel == channel:
+                return True
             else: await ctx.voice_client.disconnect()
         await channel.connect(self_deaf=True)
         if ir == "y":
@@ -88,25 +73,6 @@ class Music(commands.Cog):
             return
         await ctx.voice_client.disconnect()
 
-    @commands.hybrid_command(name='play', help='Joue une musique à partir d\'une URL YouTube')
-    async def play(self, ctx: Context, url):
-        if await Music.ljoin(self,ctx,ir="n") is False:
-            return
-        async with ctx.typing():
-            if "https://" not in url:
-                url = await self.search_youtube(url)
-                if not url:
-                    await ctx.channel.send('Aucune vidéo trouvée pour cette recherche.')
-                    return
-            player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
-            if player is None:
-                await ctx.channel.send('Erreur lors du téléchargement de la vidéo.')
-                return
-            self.queue.append(player)
-            await ctx.send(f"{player.title} ajouté à la liste.")
-        if not ctx.voice_client.is_playing():
-            await self.play_next(ctx)
-
     @commands.hybrid_command(name='pause', help='Met en pause la musique en cours')
     async def pause(self, ctx):
         if ctx.voice_client.is_playing():
@@ -119,7 +85,7 @@ class Music(commands.Cog):
             ctx.voice_client.resume()
             await ctx.send('Reprise de la musique.')
 
-    @commands.hybrid_command(name='stop', help='Arrête la musique en cours')
+    @commands.hybrid_command(name='skip', help='Arrête la musique en cours')
     async def stop(self, ctx):
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
@@ -133,16 +99,108 @@ class Music(commands.Cog):
             queue_titles = [player.title for player in self.queue]
             await ctx.send('\n'.join(queue_titles))
 
-    async def search_youtube(self, query):
-        try:
-            info = await self.bot.loop.run_in_executor(None, lambda: ytdl.extract_info(f"ytsearch:{query}", download=False))
-            if 'entries' in info and len(info['entries']) > 0:
-                return info['entries'][0]['webpage_url']
+    @commands.hybrid_command(name='play', help='Joue une musique à partir d\'une URL YouTube ou Spotify')
+    async def play(self, ctx: Context, url):
+        if await self.ljoin(ctx, ir="n") is False:
+            return
+
+        async with ctx.typing():
+            if "https://" not in url:
+                url = await self.search_youtube(url)
+                if not url:
+                    await ctx.channel.send('Aucune vidéo trouvée pour cette recherche.')
+                    return
+
+            if "spotify.com" in url:
+                tracks = await self.get_spotify_tracks(url)
+                if not tracks:
+                    await ctx.channel.send('Aucune piste trouvée pour cette playlist Spotify.')
+                    return
+                for track_url in tracks:
+                    self.queue.append(track_url)
+                    await ctx.send(f"{track_url} ajouté à la liste.")
+            elif "youtube.com/playlist" in url or "list=" in url:
+                playlist_urls = await self.get_youtube_playlist_urls(url)
+                for video_url in playlist_urls:
+                    self.queue.append(video_url)
+                    await ctx.send(f"{video_url} ajouté à la liste.")
             else:
+                self.queue.append(url)
+                await ctx.send(f"{url} ajouté à la liste.")
+
+        if not ctx.voice_client.is_playing():
+            await self.play_next(ctx)
+
+    async def play_next(self, ctx):
+        if len(self.queue) > 0:
+            url = self.queue.pop(0)
+            await ctx.send("Chargement de la musique...")
+            player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
+            if player is None:
+                await ctx.channel.send('Erreur lors du téléchargement de la vidéo. Passage à la suivante...')
+                await self.play_next(ctx)  # Passe à la vidéo suivante
+                return
+            if ctx.voice_client is None:
+                return
+            ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
+            await ctx.channel.send(f'Lecture de : {player.title}')
+        else:
+            ctx.voice_client.stop()
+            await ctx.channel.send('La file d\'attente est vide.')
+
+    async def get_spotify_tracks(self, url):
+        tracks = []
+        if "track" in url:
+            track_id = url.split("/")[-1].split("?")[0]
+            track = spotipy.Spotify.track(sp,track_id)
+            track_name = track['name'] + ' ' + track['artists'][0]['name']
+            youtube_url = await self.search_youtube(track_name)
+            if youtube_url:
+                tracks.append(youtube_url)
+        elif "playlist" in url:
+            playlist_id = url.split("/")[-1].split("?")[0]
+            results = spotipy.Spotify.playlist(sp,playlist_id)
+            for item in results['tracks']['items']:
+                track = item['track']
+                track_name = track['name'] + ' ' + track['artists'][0]['name']
+                youtube_url = await self.search_youtube(track_name)
+                if youtube_url:
+                    tracks.append(youtube_url)
+        return tracks
+
+    async def get_youtube_playlist_urls(self, url):
+        import yt_dlp
+
+        ydl_opts = {
+            'extract_flat': True,
+            'playlistend': 100,  # Limiter à 100 vidéos pour des raisons de performance
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=False)
+            video_urls = ['https://www.youtube.com/watch?v=' + entry['id'] for entry in info_dict['entries']]
+        return video_urls
+
+    async def search_youtube(self, query):
+        import yt_dlp
+
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'noplaylist': True,
+            'default_search': 'ytsearch',
+            'quiet': True,
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                info = ydl.extract_info(f"ytsearch:{query}", download=False)
+                if 'entries' in info and len(info['entries']) > 0:
+                    return info['entries'][0]['webpage_url']
+                else:
+                    return None
+            except Exception as e:
+                print(f"Une erreur s'est produite lors de la recherche YouTube: {e}")
                 return None
-        except Exception as e:
-            print(f"Une erreur s'est produite lors de la recherche YouTube: {e}")
-            return None
 
     class YTDLSource(discord.PCMVolumeTransformer):
         def __init__(self, source, *, data, volume=0.5):
@@ -152,7 +210,6 @@ class Music(commands.Cog):
             self.url = data.get('url')
             self.filename = ytdl.prepare_filename(data)
             self.duration = data.get('duration')
-
 
         @classmethod
         async def from_url(cls, url, *, loop=None, stream=False):

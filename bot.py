@@ -42,8 +42,8 @@ class BotClient(commands.Bot):
         self.command_descriptions = {}
 
     async def on_ready(self):
-        await self.add_cog(Privat(self), guild=Botloader.BetaBelouga.BotGuild)
-        await self.add_cog(Owner(self), guild=Botloader.BetaBelouga.BotGuild)
+        await self.add_cog(Privat(self))#, guild=Botloader.BetaBelouga.BotGuild)
+        await self.add_cog(Owner(self))#, guild=Botloader.BetaBelouga.BotGuild)
         await self.add_cog(Common(self))
         await self.add_cog(Admin(self))
         try:
@@ -241,17 +241,18 @@ class BotClient(commands.Bot):
                     else:
                         await channel.send(embed=embed, view=view)
         data = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guild_conf['command_name'])
-        if data and len(data) > 0:
-            data = data.split("\n")
-        ctx = await bot.get_context(message)
-        if message.content in data:
-            executor = Botloader.Data.get_guild_conf(message.guild.id, message.content)
-            try:
-                action_list = parse_actions(ctx, executor)
-                for action in action_list:
-                    await action.execute(ctx)
-            except Exception as e:
-                await ctx.send(f"Error: {str(e)}")
+        if data:
+            if len(data) > 0:
+                data = data.split("\n")
+            ctx = await bot.get_context(message)
+            if message.content in data:
+                executor = Botloader.Data.get_guild_conf(message.guild.id, message.content)
+                try:
+                    action_list = parse_actions(ctx, executor)
+                    for action in action_list:
+                        await action.execute(ctx)
+                except Exception as e:
+                    await ctx.send(f"Error: {str(e)}")
         #lvtts
         if message.channel.id == 1242185337053380738:
             if Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.cmd_value['vtts_l']) != "1":
