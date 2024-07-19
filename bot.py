@@ -361,6 +361,8 @@ async def on_command_error(ctx: Context, error):
         return await ctx.reply('Missing permissions.', ephemeral=True)
     if isinstance(error, discord.Forbidden):
         return await ctx.reply('Missing permissions.', ephemeral=True)
+    if isinstance(error, discord.NotFound):
+        return await ctx.reply('Discord possède une API de piètre qualité.')
     guild = bot.get_guild(Botloader.Bot.BotGuild)
     channel = guild.get_channel_or_thread(Botloader.Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug",description=f"Commande concernée `{command}`.",colour=discord.Colour.orange())

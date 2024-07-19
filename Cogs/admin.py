@@ -57,6 +57,8 @@ class Admin(commands.Cog):
             return await ctx.send("Succès.", ephemeral=True)
         except ValueError:
             return await ctx.reply('Veuillez entrer un entier valide comme argument.')
+        except discord.NotFound:
+            return
 
     @commands.hybrid_command(name="srvconf")
     @commands.has_permissions(administrator = True)
