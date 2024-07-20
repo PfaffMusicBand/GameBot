@@ -1,7 +1,7 @@
 import discord
 import os
 import re
-from Packs import Botloader
+from Packs.Botloader import Bot
 import aiohttp
 from gtts import gTTS
 from datetime import datetime
@@ -72,12 +72,12 @@ def parse_actions(ctx, actions: str):
                 result = eval(calc_expression)
                 content = content.replace(f'Calc[{calc_expression}]', str(result))
             except Exception as e:
-                Botloader.Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
+                Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
         for mention in mention_matches:
             try:
                 content = content.replace(f'@Mention', ctx.author.mention)
             except Exception as e:
-                Botloader.Bot.console("WARN", f"Erreur lors de l'évaluation de {calc_expression}: {e}")
+                Bot.console("WARN", f"Erreur: {e}")
         return content
 
     for action_str in action_strs:

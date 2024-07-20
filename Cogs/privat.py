@@ -1,6 +1,6 @@
 import discord
 import os
-from Packs import Botloader
+from Packs.Botloader import Data, Bot
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -25,9 +25,9 @@ class Privat(commands.Cog):
     @app_commands.autocomplete(lang = voca_autocompletion)
     @commands.guild_only()
     async def testvoca(self, interaction: Context, lang: str, nombre: int):
-        if Botloader.Data.get_user_conf(interaction.guild.id, interaction.author.id, Botloader.Data.cmd_value['voca']) == "1":
+        if Data.get_user_conf(interaction.guild.id, interaction.author.id, Data.key['testvoca']) == "1":
             return await Privat.test_voca_logic(self.bot, interaction, lang, nombre)
-        else: return await Botloader.Bot.on_refus_interaction(interaction)
+        else: return await Bot.on_refus_interaction(interaction)
 
     async def test_voca_logic(self, ctx: Context, lang, nombre):
         Privat.voca_user_data[ctx.author.id] = f"{lang}, {nombre}"
@@ -49,7 +49,7 @@ class Privat(commands.Cog):
                         r[mots] = trad
         except Exception as e:
             await ctx.reply("Une erreur s'est produite.", ephemeral=True)
-            Botloader.Bot.console("WARN", e)
+            Bot.console("WARN", e)
             return
         if mots == 0:
             await ctx.reply(f"Aucun mot trouvé dans le test de {lang}.", ephemeral=True)
@@ -103,7 +103,7 @@ class Privat(commands.Cog):
                             """, color=color)
                 embed.set_thumbnail(url = url)
                 await ctx.channel.send(embed=embed)
-                await ctx.channel.send(file=discord.File(Botloader.Bot.maketts(reponse, lg, name=f"{reponse}.mp3")))
+                await ctx.channel.send(file=discord.File(Bot.maketts(reponse, lg, name=f"{reponse}.mp3")))
                 os.remove(f'{reponse}.mp3')
             note = j*20/total
             note = round(note, 1)
@@ -136,12 +136,12 @@ class Privat(commands.Cog):
     @commands.hybrid_command(name="dm")
     @commands.guild_only()
     async def dm(self, ctx: Context, mention: discord.User,*,msg):
-        member_blackliste = Botloader.Data.get_user_conf(ctx.guild.id, mention.id, Botloader.Data.cmd_value["blackliste_dm"])
+        member_blackliste = Data.get_user_conf(ctx.guild.id, mention.id, Data.key["dm_blackliste"])
         if member_blackliste is not None:
             if str(ctx.author.id) in member_blackliste:
                 return await ctx.reply(f"Le message a été exprécément refusé par {mention.mention}.")
-        if Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf["automod_channel"]):
-            if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['dm']) == "1":
+        if Data.get_guild_conf(ctx.guild.id, Data.key["automod_channel"]):
+            if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['dm']) == "1":
                 message = ctx.message
                 if len(message.attachments) > 1:
                     return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")
@@ -167,5 +167,5 @@ class Privat(commands.Cog):
                 else:
                     await channel.send(embed=embed ,view=view)
                 return await ctx.reply("Succès", ephemeral=True) 
-            return await Botloader.Bot.on_refus_interaction(ctx)
+            return await Bot.on_refus_interaction(ctx)
         else: return await ctx.reply("Le serveur ne possède pas la configuration requise pour l'exécution de la commande.")

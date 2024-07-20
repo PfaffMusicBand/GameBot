@@ -1,3 +1,21 @@
+"""
+Modul Botloader
+----------------
+Regroupe tout les éléments essentiels
+
+Le module permet de récupérer toutes les variables essentielles au bot ainsi que les données des guildes et des utilisateurs.
+
+Data
+-----
+`Data.`
+
+Bot
+----
+`Bot.`
+>>> Bot.Name
+>>> Bot.Token
+>>> Bot.Prefix
+"""
 import os
 import math
 import asyncio
@@ -9,6 +27,7 @@ import sqlite3
 from gtts import gTTS
 from datetime import datetime
 from collections import deque
+from enum import Enum
 
 
 __path__ = os.path.dirname(os.path.abspath(__file__))
@@ -28,38 +47,68 @@ class owner_permission:
         if member_id != owner_permission.owner_id:
             return False
         else: return True
-
 class Data:
-    cmd_value = {
-        'sayic': 'say_in_channel_permission',
-        'say': 'say_command_permission',
-        'dm': 'privat_message_bot_permission',
-        'vtts': 'vtts_command_permission',
-        'ftts': 'ftts_commande_permission',
-        'rdm': 'rdm_commande_permission',
-        'voca': 'voca_commande_permission',
-        'vtts_l': 'vtts_direct_message_permission',
-        'execute': 'execute_command_permission',
-        'blackliste_dm': 'blackliste_dm_member'
-    }
+    """
+    Fonctionnalités
+    ----------------
+    Pour récupérer une valeur: 
+        -guild `Data.get_guild_conf`
+        -utilisateur de guild `Data.get_user_conf`
+    Pour insérer / modifier:
+        -guild `Data.set_guild_conf`
+        -utilisateur de guild `Data.set_user_conf`
+    Pour supprimer:
+        -guild `Data.delete_guild_conf`
+        -utilisateur `Data.delete_user_conf`
 
-    user_category = {
-        'permission': 'permission_category',
-        'xp': 'xp_category'
-    }
+    Tips
+    -----
+    Pour récupérer plus facillement une Clef de Database `Data.<NOM_DE_CLEF>`:
 
-    guild_conf = {
-        'xp_message_by_character': 'xp_by_message_reward',
-        'xp_vocal_by_minute': 'xp_by_vocal_reward',
-        'automod_channel': 'automod_channel_report',
-        'command_name': 'extra_command_name',
-    }
+    Exemple
+    --------
+    >>> Data.CUSTOM_COMMANDS_NAMES
+    >>> Data.get_guild_conf(guild_id, Data.AUTOMOD_CHANNEL)
+    >>> Data.set_guild_conf(guild_id, Data.AUTOMOD_CHANNEL, value)
+    >>> Data.delete_guild_conf(guild_id, Data.AUTOMOD_CHANNEL)
+    """
 
     def __init__(self, db_path):
         self.db_path = db_path
         self.connection = sqlite3.connect(db_path)
         self.cursor = self.connection.cursor()
         self.create_tables()
+
+    key_value = key = {
+        'execute':'command_execute_permission',
+        'custom_commands_names':'custom_commands_names',
+        'sayic':'command_sayic_permission',
+        'say':'command_say_permission',
+        'vtts':'command_vtts_permission',
+        'ftts':'command_ftts_permission',
+        'randome':'command_rdm_permission',
+        'testvoca':'command_testvoca_permission',
+        'dm':'command_dm_permission',
+        'dm_blackliste':'blackliste_dm_id',
+        'automod_channel':'automod_channel_id',
+        'vtts_directe_message':'vtts_directe_message'
+
+    }
+
+    keys = list(key_value.keys())
+
+    EXECUTE = keys[0]
+    CUSTOM_COMMANDS_NAMES = keys[1]
+    SAYIC = keys[2]
+    SAY = keys[3]
+    VTTS = keys[4]
+    FTTS = keys[5]
+    RANDOM = keys[6]
+    TESTVOCA = keys[7]
+    DM = keys[8]
+    DM_BLACKLISTE = keys[9]
+    AUTOMOD_CHANNEL = keys[10]
+    VTTS_DIRECTE_MESSAGE = keys[11]
 
     def create_tables(self):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS guild_conf (
@@ -93,31 +142,64 @@ class Data:
         self.connection.commit()
 
     @staticmethod
-    def insert_guild_conf(guild_id, conf_key, conf_value):
-        connection = sqlite3.connect(f"{Bot.Name}.db")
-        cursor = connection.cursor()
-        cursor.execute('''INSERT OR REPLACE INTO guild_conf (guild_id, conf_key, conf_value)
-                          VALUES (?, ?, ?)''', (guild_id, conf_key, conf_value))
-        connection.commit()
-        connection.close()
+    def set_guild_conf(guild_id, conf_key, conf_value):
+        data =  Data.get_guild_conf(guild_id, conf_key)
+        if data:
+            connection = sqlite3.connect(f"{Bot.Name}.db")
+            cursor = connection.cursor()
+            cursor.execute('''UPDATE guild_conf
+                            SET conf_value = ?
+                            WHERE guild_id = ? AND conf_key = ?''',
+                        (conf_value, guild_id, conf_key))
+            connection.commit()
+            connection.close()
+        else:
+            connection = sqlite3.connect(f"{Bot.Name}.db")
+            cursor = connection.cursor()
+            cursor.execute('''INSERT OR REPLACE INTO guild_conf (guild_id, conf_key, conf_value)
+                            VALUES (?, ?, ?)''', (guild_id, conf_key, conf_value))
+            connection.commit()
+            connection.close()
 
     @staticmethod
-    def insert_user_conf(guild_id, user_id, conf_key, conf_value):
-        connection = sqlite3.connect(f"{Bot.Name}.db")
-        cursor = connection.cursor()
-        cursor.execute('''INSERT OR REPLACE INTO user_conf (guild_id, user_id, conf_key, conf_value)
-                          VALUES (?, ?, ?, ?)''', (guild_id, user_id, conf_key, conf_value))
-        connection.commit()
-        connection.close()
+    def set_user_conf(guild_id, user_id, conf_key, conf_value):
+        data =  Data.get_user_conf(guild_id, user_id, conf_key)
+        if data:
+            connection = sqlite3.connect(f"{Bot.Name}.db")
+            cursor = connection.cursor()
+            cursor.execute('''UPDATE user_conf
+                            SET conf_value = ?
+                            WHERE guild_id = ? AND user_id = ? AND conf_key = ?''',
+                        (conf_value, guild_id, user_id, conf_key))
+            connection.commit()
+            connection.close()
+        else:
+            connection = sqlite3.connect(f"{Bot.Name}.db")
+            cursor = connection.cursor()
+            cursor.execute('''INSERT OR REPLACE INTO user_conf (guild_id, user_id, conf_key, conf_value)
+                            VALUES (?, ?, ?, ?)''', (guild_id, user_id, conf_key, conf_value))
+            connection.commit()
+            connection.close()
 
     @staticmethod
-    def insert_user_game_data(user_id, guild_id, game_key, game_value):
-        connection = sqlite3.connect(f"{Bot.Name}.db")
-        cursor = connection.cursor()
-        cursor.execute('''INSERT OR REPLACE INTO user_game_data (user_id, guild_id, game_key, game_value)
-                          VALUES (?, ?, ?, ?)''', (user_id, guild_id, game_key, game_value))
-        connection.commit()
-        connection.close()
+    def set_user_game_data(user_id, guild_id, game_key, game_value):
+        data = Data.get_user_game_data(user_id, guild_id, game_key)
+        if data:
+            connection = sqlite3.connect(f"{Bot.Name}.db")
+            cursor = connection.cursor()
+            cursor.execute('''UPDATE user_game_data
+                            SET game_value = ?
+                            WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
+                        (game_value, user_id, guild_id, game_key))
+            connection.commit()
+            connection.close()
+        else:
+            connection = sqlite3.connect(f"{Bot.Name}.db")
+            cursor = connection.cursor()
+            cursor.execute('''INSERT OR REPLACE INTO user_game_data (user_id, guild_id, game_key, game_value)
+                            VALUES (?, ?, ?, ?)''', (user_id, guild_id, game_key, game_value))
+            connection.commit()
+            connection.close()
 
     @staticmethod
     def get_guild_conf(guild_id, conf_key):
@@ -160,39 +242,6 @@ class Data:
             return None
 
     @staticmethod
-    def update_guild_conf(guild_id, conf_key, conf_value):
-        connection = sqlite3.connect(f"{Bot.Name}.db")
-        cursor = connection.cursor()
-        cursor.execute('''UPDATE guild_conf
-                          SET conf_value = ?
-                          WHERE guild_id = ? AND conf_key = ?''',
-                       (conf_value, guild_id, conf_key))
-        connection.commit()
-        connection.close()
-
-    @staticmethod
-    def update_user_conf(guild_id, user_id, conf_key, conf_value):
-        connection = sqlite3.connect(f"{Bot.Name}.db")
-        cursor = connection.cursor()
-        cursor.execute('''UPDATE user_conf
-                          SET conf_value = ?
-                          WHERE guild_id = ? AND user_id = ? AND conf_key = ?''',
-                       (conf_value, guild_id, user_id, conf_key))
-        connection.commit()
-        connection.close()
-
-    @staticmethod
-    def update_user_game_data(user_id, guild_id, game_key, game_value):
-        connection = sqlite3.connect(f"{Bot.Name}.db")
-        cursor = connection.cursor()
-        cursor.execute('''UPDATE user_game_data
-                          SET game_value = ?
-                          WHERE user_id = ? AND guild_id = ? AND game_key = ?''',
-                       (game_value, user_id, guild_id, game_key))
-        connection.commit()
-        connection.close()
-
-    @staticmethod
     def delete_guild_conf(guild_id, conf_key):
         connection = sqlite3.connect(f"{Bot.Name}.db")
         cursor = connection.cursor()
@@ -223,6 +272,23 @@ class Data:
         connection.close()
 
 class Bot():
+    """
+    Fonctionnalités
+    ----------------
+
+    Permet de réccupérer des info sur le Bot
+    
+    `Name` -> str()
+    `Token` -> str()
+    `BotGuild` -> int()
+    `AnnonceChannel` -> int()
+    `ConsoleChannel` -> int()
+    `MessageChannel` -> int()
+    `BugReportChannel` -> int()
+    `Prefix` -> str()
+    `Pasword` -> str()
+
+    """
 
     queue = deque()
 
@@ -331,4 +397,3 @@ class GameHub:
     BugreportChannel = 1141666570188361771
     VTTSListenerChannel = 1242185337053380738
     Prefix = "?"
-    

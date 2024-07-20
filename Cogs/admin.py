@@ -1,7 +1,7 @@
 import discord
 import asyncio
 import aiohttp
-from Packs import Botloader
+from Packs.Botloader import Data, Bot
 from discord.ui import View, Select
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -14,14 +14,14 @@ class Admin(commands.Cog):
         self.bot = bot
 
     async def blackliste_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-        commands = ['sayic', 'say', 'dm', 'vtts', 'ftts', 'rdm']
+        commands = ['sayic', 'say', 'dm', 'vtts', 'ftts', 'random']
         return [
                 app_commands.Choice(name=cmd, value=cmd)
                 for cmd in commands if current.lower() in cmd.lower()
             ]
     
     async def srvconf_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-        parametres = ['xp_message_by_character', 'xp_vocal_by_minute', 'automod_channel']
+        parametres = ['automod_channel']
         return [
                 app_commands.Choice(name=parametre, value=parametre)
                 for parametre in parametres if current.lower() in parametre.lower()
@@ -32,18 +32,18 @@ class Admin(commands.Cog):
     @app_commands.autocomplete(cmd = blackliste_autocompletion)
     @commands.guild_only()
     async def blackliste(self, ctx: Context, member: discord.Member, cmd, permission: bool):
-        if cmd not in Botloader.Data.cmd_value:
+        if cmd not in Data.key:
             return await ctx.reply("Clef non-valide", ephemeral=True)
-        var_key = Botloader.Data.cmd_value[cmd]
-        data = Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, cmd)
+        var_key =Data.key[cmd]
+        data = Data.get_user_conf(ctx.guild.id, ctx.author.id, cmd)
         if data is not None:
             try:
-                Botloader.Data.update_user_conf(ctx.guild.id,member.id,var_key,permission)
+                Data.set_user_conf(ctx.guild.id,member.id,var_key,permission)
                 return await ctx.reply(f"Membre {member} ajouté à la blackliste de la command {cmd} (précédemment {data}).")
             except Exception as e:
                 return await ctx.reply(f"Erreur: {e}.")
         try:
-            Botloader.Data.insert_user_conf(guild_id=ctx.guild.id, user_id=member.id, conf_key=var_key, conf_value=permission)
+            Data.set_user_conf(guild_id=ctx.guild.id, user_id=member.id, conf_key=var_key, conf_value=permission)
             return await ctx.reply(f"Membre {member} ajouté à la blackliste de la command {cmd}.")
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
@@ -87,7 +87,7 @@ class Admin(commands.Cog):
 #            message = view.message = await ctx.reply(embed=embed, view=view)
 #            await view.wait()
 
-    @commands.hybrid_command(name="clear", help=f"Supprime les n derniers messages dans le canal.\nSyntaxe: `{Botloader.Bot.Prefix}clear [argument(int)]`")
+    @commands.hybrid_command(name="clear", help=f"Supprime les n derniers messages dans le canal.\nSyntaxe: `{Bot.Prefix}clear [argument(int)]`")
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def clear(self, ctx: Context, amount: int):
@@ -99,42 +99,41 @@ class Admin(commands.Cog):
         except discord.NotFound:
             return
 
-    @commands.hybrid_command(name="srvconf")
+    @commands.hybrid_command(name="automod_channel")
     @commands.has_permissions(administrator = True)
-    @app_commands.autocomplete(parametre=srvconf_autocompletion)
     @commands.guild_only()
-    async def serverconf(self, ctx: Context, parametre: str, valeur: str):
-        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre])
+    async def automod_channel(self, ctx: Context, channel: discord.TextChannel):
+        data = Data.get_guild_conf(ctx.guild.id, Data.AUTOMOD_CHANNEL)
         if data is not None:
             try:
-                Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre], valeur)
-                return await ctx.reply(f"Le paramètre {parametre} a bien été modifié: {data} => {valeur}.")
+                Data.set_guild_conf(ctx.guild.id, Data.AUTOMOD_CHANNEL, channel.id)
+                return await ctx.reply(f"Le channel automod a bien été modifié: <#{data}> => {channel}.")
             except Exception as e:
                 return await ctx.reply(f"Erreur: {e}.")
         try:
-            Botloader.Data.insert_guild_conf(ctx.guild.id, Botloader.Data.guild_conf[parametre], valeur)
-            return await ctx.reply(f"Le paramètre {parametre} a bien été définit sur {valeur}.")
+            Data.set_guild_conf(ctx.guild.id, Data.AUTOMOD_CHANNEL, channel.id)
+            return await ctx.reply(f"Le channel automod a bien été définit sur {channel}.")
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
     
     @commands.hybrid_command(name="execute")
     @commands.guild_only()
     async def execute(self, ctx: Context,*,actions: str):
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['execute']) == "1":
+        if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key_value['execute']) == "1":
             try:
                 action_list = parse_actions(ctx, actions)
                 for action in action_list:
                     await action.execute(ctx)
             except Exception as e:
                 await ctx.send(f"Error: {str(e)}")
-        else: await Botloader.Bot.on_refus_interaction(ctx)
+        else: await Bot.on_refus_interaction(ctx)
 
     @commands.hybrid_command(name="create_command")
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def create_command(self, ctx: commands.Context, prefix: str, name: str):
         # Init
-        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'])
+        data = Data.get_guild_conf(ctx.guild.id, Data.CUSTOM_COMMANDS_NAMES)
         if data and len(data) > 0:
             data = data.split("\n")
             if len(data) > 4:
@@ -229,17 +228,13 @@ class Admin(commands.Cog):
                     if self.data:
                         if command_name in self.data:
                             return await ctx.send('La command existe déjà.')
-                        else:
-                            data_str = "\n".join(self.data)
-                            data = data_str+"\n"+command_name
-                            Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'], data)
-                            Botloader.Data.insert_guild_conf(ctx.guild.id,command_name, self.executore)
-                            return await ctx.send('Enregistré')
+                        data_str = "\n".join(self.data)
                     else:
-                        Botloader.Data.insert_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'], command_name)
-                        print(self.executore)
-                        Botloader.Data.insert_guild_conf(ctx.guild.id,command_name, self.executore)
-                        return await ctx.send('Enregistré')
+                        data_str = ""
+                    data = data_str+"\n"+command_name
+                    Data.set_guild_conf(ctx.guild.id, Data.CUSTOM_COMMANDS_NAMES, data)
+                    Data.set_guild_conf(ctx.guild.id,command_name, self.executore)
+                    return await ctx.send('Enregistré')
         view = ActionSelector(self.bot)
         await ctx.send(embed=embed, view=view)
     
@@ -248,14 +243,14 @@ class Admin(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def custom_commands(self, ctx: commands.Context):
         bot = self.bot
-        data = Botloader.Data.get_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'])
+        data = Data.get_guild_conf(ctx.guild.id, Data.key_value['custom_commands_names'])
         embed = discord.Embed(title="**Liste des Commandes Personnalisées**",description="Liste des commandes personnalisées du serveur.",color=discord.Colour.dark_magenta())
         commands_list = []
         if data and len(data) > 0:
             data = data.split("\n")
             for command in data:
                 commands_list.append(command)
-                embed.add_field(name=command, value=Botloader.Data.get_guild_conf(ctx.guild.id, command), inline=False)
+                embed.add_field(name=command, value=Data.get_guild_conf(ctx.guild.id, command), inline=False)
         else:
             embed.add_field(name="Aucune commande custom disponible pour ce serveur.",value="Créez en avec `/create_command <prefix> <name>`.",inline=False)
 
@@ -307,8 +302,8 @@ class Admin(commands.Cog):
                             if user_message.content.lower() == "delete":
                                 self.data.remove(selected_command)
                                 data_str = "\n".join(self.data)
-                                Botloader.Data.update_guild_conf(ctx.guild.id, Botloader.Data.guild_conf['command_name'], data_str)
-                                Botloader.Data.delete_guild_conf(ctx.guild.id, selected_command)
+                                Data.set_guild_conf(ctx.guild.id, Data.key_value['custom_commands_names'], data_str)
+                                Data.delete_guild_conf(ctx.guild.id, selected_command)
                                 await user_message.reply(f"La commande `{self.selected_command}` a été supprimée.")
                                 await user_message.delete()
                                 return

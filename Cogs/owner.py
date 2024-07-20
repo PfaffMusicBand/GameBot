@@ -1,5 +1,5 @@
 import discord
-from Packs import Botloader
+from Packs.Botloader import owner_permission, Data, Bot
 import asyncio
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -11,18 +11,18 @@ class Owner(commands.Cog):
 
     @commands.command(name="off")
     async def off(self, ctx: Context):
-        if not Botloader.owner_permission.check(ctx.author.id):
+        if not owner_permission.check(ctx.author.id):
             return
         await ctx.send("Bot was offline.")
         await asyncio.sleep(3)
         print("")
-        Botloader.Bot.console("INFO", f'Bot Closed')
+        Bot.console("INFO", f'Bot Closed')
         print("")
         await self.bot.close()
         
     @commands.command(name="invits")
     async def invits(self, ctx: Context):
-        if not Botloader.owner_permission.check(ctx.author.id):
+        if not owner_permission.check(ctx.author.id):
             return
         for guild in self.bot.guilds:
             try:

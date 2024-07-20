@@ -1,18 +1,35 @@
+"""
+Modul automod
+--------------
+Système d'automod du bot.
+Pour plus d'info:
+>>> automod.AutoMod
+"""
 from Levenshtein import distance
 from collections import defaultdict
 
 class AutoMod:
+    """
+    Utilisation
+    -------------
+    Prend en entrée une liste de mot et donne en sortie une liste de mots considérés comme grossier ainsi que la similarité entre le mot du message et le mot avec lequel il est comparé.
+
+    Exemple
+    --------
+    >>> AutoMod.check_message(message) -> black_word["mot_du_message"] = "mot_trouvé", black_word_similarity["mot_du_message"] = float(similarite des mots de 0 à 1)
+    >>> AutoMod.check_message("sale puttteux") -> black_word["puttteux"] = "pute", black_word_similarity["puttteux"] = 0.43
+    """
     black_liste = []
 
     @staticmethod
     def check_word_init():
-        with open("Packages/blackword.txt", "r", encoding="utf-8") as data:
+        with open("Packs/blackword.txt", "r", encoding="utf-8") as data:
             return [ligne.strip() for ligne in data]
 
     @staticmethod
     def var_word_init():
         variation = defaultdict(list)
-        with open("Packages/blackwordvariation.txt", "r", encoding="utf-8") as data:
+        with open("Packs/blackwordvariation.txt", "r", encoding="utf-8") as data:
             for line in data:
                 vars, true_var = line.strip().split("@")
                 vars = vars.split(",")

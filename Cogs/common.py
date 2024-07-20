@@ -1,5 +1,5 @@
 import discord
-from Packs import Botloader
+from Packs.Botloader import Data, Bot
 import asyncio
 import os
 from discord import app_commands
@@ -31,8 +31,8 @@ class Common(commands.Cog):
     @commands.hybrid_command(name="bugreport", help = f"Signaler un bug.")
     @app_commands.autocomplete(command = cmd_autocompletion)
     async def bugreport(self, ctx: Context, command, bug: str):
-        guild = self.bot.get_guild(Botloader.Bot.BotGuild)
-        channel = guild.get_channel_or_thread(Botloader.Bot.BugReportChannel)
+        guild = self.bot.get_guild(Bot.BotGuild)
+        channel = guild.get_channel_or_thread(Bot.BugReportChannel)
         embed = discord.Embed(title="Rapport de Bug", description=f"Commande concernée `{command}`.", colour=discord.colour.Color.orange())
         embed.add_field(name="Bug:", value=bug, inline=False)
         embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
@@ -51,8 +51,8 @@ class Common(commands.Cog):
         blw, blws = AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['sayic']) != "1":
-            return await Botloader.Bot.on_refus_interaction(ctx)
+        if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['sayic']) != "1":
+            return await Bot.on_refus_interaction(ctx)
         await channel.send(text)
         await ctx.reply(f"Votre message a bien été envoyé dans #{channel}!")
 
@@ -62,8 +62,8 @@ class Common(commands.Cog):
         blw, blws = AutoMod.check_message(text)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['say']) == "0":
-            return await Botloader.Bot.on_refus_interaction(ctx)
+        if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['say']) == "0":
+            return await Bot.on_refus_interaction(ctx)
         await ctx.send(text)
 
     @commands.hybrid_command(name="vtts")
@@ -73,8 +73,8 @@ class Common(commands.Cog):
         blw, blws = AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['vtts']) == "0":
-            return await Botloader.Bot.on_refus_interaction(ctx)
+        if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['vtts']) == "0":
+            return await Bot.on_refus_interaction(ctx)
         if ctx.voice_client is None:
             await ctx.send("Le bot n'est pas connecté à un canal vocal. Utilisez !join pour le faire rejoindre un canal vocal.", ephemeral=True)
             return
@@ -82,7 +82,7 @@ class Common(commands.Cog):
         try:
             tts = gTTS(text=text_to_speak, lang=lg)
             tts.save('output.mp3')
-            await Botloader.Bot.play_audio(ctx,'output.mp3')
+            await Bot.play_audio(ctx,'output.mp3')
             await ctx.reply('Succès.', ephemeral=True)
         except Exception as e:
             await ctx.reply(f"Une erreur est survenue: {e} \n N'ésitez pas à faire un `/bugreport`")
@@ -94,8 +94,8 @@ class Common(commands.Cog):
         blw, blws = AutoMod.check_message(text_to_speak)
         if len(blw) != 0:
             return await ctx.reply("Veuillez surveiller votre langage.")
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['ftts']) == "0":
-            return await Botloader.Bot.on_refus_interaction(ctx)
+        if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['ftts']) == "0":
+            return await Bot.on_refus_interaction(ctx)
         try:
             tts = gTTS(text=text_to_speak, lang=lg)
         except:
@@ -112,8 +112,8 @@ class Common(commands.Cog):
     @commands.hybrid_command(name = "rdm")
     @commands.guild_only()
     async def randome(self, ctx: Context, min: int, max: int):
-        if Botloader.Data.get_user_conf(ctx.guild.id, ctx.author.id, Botloader.Data.cmd_value['rdm']) == "0":
-            return await Botloader.Bot.on_refus_interaction(ctx)
+        if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['randome']) == "0":
+            return await Bot.on_refus_interaction(ctx)
         try:
             if int(max) > int(min):
                 num = randint(int(min), int(max))
@@ -124,4 +124,4 @@ class Common(commands.Cog):
             embed.add_field(name="Nombre:", value=num, inline=False)
             await ctx.reply(embed=embed)
         except Exception as e:
-            Botloader.Bot.console("WARN", e)
+            Bot.console("WARN", e)

@@ -3,7 +3,7 @@ import yt_dlp as youtube_dl
 import spotipy
 import asyncio
 import os
-from Packs import Botloader
+from Packs.Botloader import Data, Bot
 from discord.ext.commands import Context
 from discord.ext import commands
 from spotipy.oauth2 import SpotifyClientCredentials

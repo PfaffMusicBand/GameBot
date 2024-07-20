@@ -1,9 +1,10 @@
+
 import discord
 import asyncio
 import os
 import discord.ext
 import discord.ext.commands
-from Packs import Botloader
+from Packs.Botloader import tz,owner_permission, Data, Bot, GameHub
 import argparse
 import pytz
 import glob
@@ -27,14 +28,13 @@ def main():
     parser.add_argument('Botname', type=str, default="Bot", help='Nom du bot à lancer')
     parser.add_argument('--pasword', type=str, default="", help="Mot de passe")
     args = parser.parse_args()
-    Botloader.Bot.Launched(args.Botname, str(args.pasword))
+    Bot.Launched(args.Botname, str(args.pasword))
 
 if __name__ == '__main__':
     main()
 
 statutpresence = ["you!", "cooked you!"]
 r = "n"
-
 
 class BotClient(commands.Bot):
     def __init__(self, *args, **kwargs):
@@ -49,14 +49,14 @@ class BotClient(commands.Bot):
         try:
             await self.add_cog(Music(self))
         except Exception as e: print(e)
-        Botloader.Bot.console("INFO", f'Logged in as {self.user} (ID: {self.user.id})')
+        Bot.console("INFO", f'Logged in as {self.user} (ID: {self.user.id})')
         await self.versions(type="on_ready", ctx=None)
         await self.change_presence(status=discord.Status.online, activity=discord.Game("Chargement des cookis!"))
         try:
             synced = await self.tree.sync()
-            Botloader.Bot.console("INFO", f'Synced {len(synced)} commands')
+            Bot.console("INFO", f'Synced {len(synced)} commands')
         except Exception as e:
-            Botloader.Bot.console("WARN", f'Error: {e}')
+            Bot.console("WARN", f'Error: {e}')
         statut = randint(0,1)
         if statut == 1:
             actype = discord.ActivityType.playing
@@ -73,7 +73,7 @@ class BotClient(commands.Bot):
     async def versions(self, type, ctx: Context):
         patch = None
         if type == "on_ready":
-            return Botloader.Bot.console("INFO", f'Logged in V{BOT_VERSION}')
+            return Bot.console("INFO", f'Logged in V{BOT_VERSION}')
         check = Version.check()
         if check == "j":
             description, color, url = "Votre bot est à jour.", discord.Colour.green(), "https://cdn3.emoji.gg/emojis/2990_yes.png"
@@ -96,12 +96,12 @@ class BotClient(commands.Bot):
         if not args:
             embed = discord.Embed(title="Liste des commandes disponibles:", description="Certaines commandes ne sont pas recensées ici.", color=discord.Color.green())
             for command, description in self.command_descriptions.items():
-                embed.add_field(name=f"{Botloader.Bot.Prefix}{command}", value=description, inline=False)
+                embed.add_field(name=f"{Bot.Prefix}{command}", value=description, inline=False)
             await ctx.send(embed=embed)
         else:
             command_name = args[0]
             description = self.command_descriptions.get(command_name, "Aucune description disponible.")
-            embed = discord.Embed(title=f"{Botloader.Bot.Prefix}{command_name}", description=description, color=discord.Color.green())
+            embed = discord.Embed(title=f"{Bot.Prefix}{command_name}", description=description, color=discord.Color.green())
             await ctx.send(embed=embed)
     
     async def version(self, ctx: Context):
@@ -112,12 +112,12 @@ class BotClient(commands.Bot):
         await ctx.send(embed=embed)
         
     async def restart(self, ctx: Context):
-        if Botloader.owner_permission.check(ctx.author.id) != True:
+        if owner_permission.check(ctx.author.id) != True:
             return await ctx.reply("Vous ne disposez pas des autorisations nécéssaire.")
         await ctx.send("Bot was offline for restart.")
         await asyncio.sleep(3)
         print("")
-        Botloader.Bot.console("INFO", f'Bot Closed for restart')
+        Bot.console("INFO", f'Bot Closed for restart')
         print("")
         global r
         r = "y"
@@ -139,22 +139,28 @@ class BotClient(commands.Bot):
             if interaction.data["custom_id"] == "spam_dm":
                 b, guild, user, msg = interaction.data["values"][0].split("/|/")
                 if b == "y":
-                    data = Botloader.Data.get_user_conf(guild, interaction.user.id, Botloader.Data.cmd_value['blackliste_dm'])
-                    if data is None:
-                        Botloader.Data.insert_user_conf(guild, interaction.user.id, Botloader.Data.cmd_value['blackliste_dm'], user)
-                    elif user not in data:
-                        Botloader.Data.update_user_conf(guild, interaction.user.id, Botloader.Data.cmd_value['blackliste_dm'], data.append(user))
+                    blackliste = Data.get_user_conf(guild, interaction.user.id, Data.DM_BLACKLISTE)
+                    data = ""
+                    print(data)
+                    if blackliste:
+                        print(blackliste)
+                        data = blackliste
+                    print("sa pue la merde")
+                    data = data+"\n"+user
+                    print(data)
+                    Data.set_user_conf(guild, interaction.user.id, Data.DM_BLACKLISTE, data)
+                    print("ok")
                     title = "Le message a bien été signalé et le membre bloqué.\nSi vous avez d'autre problèmes, n'ésitez pas à nous contacter:\nsupport@gamebot.smaugue.lol"
                     placeholder = "Signalé et Bloqué"
                 else: 
                     title = "Le message a bien été signalé.\nSi vous avez d'autre problèmes, n'ésitez pas à nous contacter:\nsupport@gamebot.smaugue.lol"
                     placeholder = "Signalé"
-                automod_channel_id = Botloader.Data.get_guild_conf(guild, 'automod_channel_report')
+                automod_channel_id = Data.get_guild_conf(guild, Data.key['automod_channel'])
                 try:
                     channel = bot.get_guild(int(guild)).get_channel(int(automod_channel_id))
                 except Exception as e:
                     return await interaction.channel.send(f"Une erreur s'est produite: {e}. \n Veuillez contacter les administarteur du serveur don est issu le message ({ctx.guild})")
-                startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
                 embed = discord.Embed(title="Signalement de Spam en DM", description=startTime, color=discord.Color.brand_red())
                 embed.add_field(name="User", value=bot.get_user(int(user)).mention, inline=False)
                 embed.add_field(name="Target", value=interaction.user.mention, inline=False)
@@ -177,7 +183,7 @@ class BotClient(commands.Bot):
                 await interaction.message.edit(view=view)
                 embed = discord.Embed(title="**Signalement**", description=title, color=discord.Colour.red())
                 return await interaction.channel.send(embed=embed)
-            if interaction.data["custom_id"] == "bugreport_correction" and interaction.user.id == Botloader.owner_permission.owner_id:
+            if interaction.data["custom_id"] == "bugreport_correction" and interaction.user.id == owner_permission.owner_id:
                 view = discord.ui.View()
                 item = discord.ui.Button(style=discord.ButtonStyle.gray, label="Corrigé", custom_id="bugreport_correction", disabled=True)
                 view.add_item(item=item)
@@ -186,7 +192,7 @@ class BotClient(commands.Bot):
                 embed.set_field_at(index=1, name=embed.fields[1].name, value="Corrigé.", inline=embed.fields[1].inline)
                 embed.color = discord.Color.green()
                 return await interaction.message.edit(embed=embed, view=view)
-            if interaction.data["custom_id"] == "bugreport_correction_n" and interaction.user.id == Botloader.owner_permission.owner_id:
+            if interaction.data["custom_id"] == "bugreport_correction_n" and interaction.user.id == owner_permission.owner_id:
                 view = discord.ui.View()
                 item = discord.ui.Button(style=discord.ButtonStyle.gray, label="Non Recevable", custom_id="bugreport_correction_n", disabled=True)
                 view.add_item(item=item)
@@ -213,7 +219,7 @@ class BotClient(commands.Bot):
             return
         blw, blws = AutoMod.check_message(message.content)
         if len(blw) != 0:
-            automod_channel_id = Botloader.Data.get_guild_conf(message.guild.id, 'automod_channel_report')
+            automod_channel_id = Data.get_guild_conf(message.guild.id, Data.key['automod_channel'])
             if automod_channel_id is not None:
                 channel = message.guild.get_channel(int(automod_channel_id))
                 if channel:
@@ -221,7 +227,7 @@ class BotClient(commands.Bot):
                         zone = "Signalement de langage offensant en DM."
                     else:
                         zone = "Signalement de langage offensant."
-                    startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                    startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
                     embed = discord.Embed(title=zone, description=startTime, color=discord.Color.brand_red())
                     embed.set_thumbnail(url=message.author.avatar.url)
                     embed.add_field(name="User", value=message.author.mention, inline=False)
@@ -236,17 +242,17 @@ class BotClient(commands.Bot):
                     if message.attachments:
                         for attachment in message.attachments:
                             embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
-                    if channel.id == Botloader.GameHub.MessageChannel:
+                    if channel.id == GameHub.MessageChannel:
                         await channel.send("||<@575746878583472128>||||<@724996627366019133>||", embed=embed, view=view)
                     else:
                         await channel.send(embed=embed, view=view)
-        data = Botloader.Data.get_guild_conf(message.guild.id, Botloader.Data.guild_conf['command_name'])
+        data = Data.get_guild_conf(message.guild.id, Data.key['custom_commands_names'])
         if data:
             if len(data) > 0:
                 data = data.split("\n")
             ctx = await bot.get_context(message)
             if message.content in data:
-                executor = Botloader.Data.get_guild_conf(message.guild.id, message.content)
+                executor = Data.get_guild_conf(message.guild.id, message.content)
                 try:
                     action_list = parse_actions(ctx, executor)
                     for action in action_list:
@@ -255,18 +261,18 @@ class BotClient(commands.Bot):
                     await ctx.send(f"Error: {str(e)}")
         #lvtts
         if message.channel.id == 1242185337053380738:
-            if Botloader.Data.get_user_conf(message.guild.id, message.author.id, Botloader.Data.cmd_value['vtts_l']) != "1":
-                await Botloader.Bot.on_refus_interaction(ctx)
+            if Data.get_user_conf(message.guild.id, message.author.id, Data.key['vtts_direct_message']) != "1":
+                await Bot.on_refus_interaction(ctx)
             else:
                 M = await ctx.reply("En cours de validation...", mention_author=False)
                 try:
                     if len(blw) != 0:
                         await M.edit(content="Échec de la validation: surveillez votre langage.")
                     elif ctx.voice_client is None:
-                        await M.edit(content=f"Le bot n'est pas connecté à un canal vocal. Utilisez {Botloader.Bot.Prefix}join pour lui faire rejoindre.")
+                        await M.edit(content=f"Le bot n'est pas connecté à un canal vocal. Utilisez {Bot.Prefix}join pour lui faire rejoindre.")
                     else:
                         try:
-                            startTime = datetime.strftime(datetime.now(Botloader.tz), '%H:%M:%S')
+                            startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
                             txt = message.content
                             tts = gTTS(text=txt, lang="fr")
                             output_filename = f'{ctx.guild.id}_{startTime}_output.mp3'
@@ -278,7 +284,7 @@ class BotClient(commands.Bot):
                                 output_filename = f'{ctx.guild.id}_{startTime}_{i}_output.mp3'
                             
                             tts.save(output_filename)
-                            await Botloader.Bot.play_audio(ctx, output_filename)
+                            await Bot.play_audio(ctx, output_filename)
                             await M.edit(content="Succès.")
                         except Exception as e:
                             await M.edit(content=f"Une erreur est survenue: {str(e)} \n N'hésitez pas à faire un `/bugreport`")
@@ -313,7 +319,7 @@ class BotClient(commands.Bot):
 #            await message.reply(f'Vous avez gagné {count * xp_multiplicator}. Vous avez un total de {data + count * xp_multiplicator} dont {data_m + count * xp_multiplicator} grâce aux messages.')
         await self.process_commands(message)
 
-bot = client = BotClient(command_prefix=Botloader.Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")
+bot = client = BotClient(command_prefix=Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")
 bot.remove_command('help')
 
 @bot.command(name="restart")
@@ -337,8 +343,8 @@ async def on_error(event_method, *args, **kwargs):
     error = kwargs.get('error')
     if not error:
         return
-    guild = bot.get_guild(Botloader.Bot.BotGuild)
-    channel = guild.get_channel_or_thread(Botloader.Bot.BugReportChannel)
+    guild = bot.get_guild(Bot.BotGuild)
+    channel = guild.get_channel_or_thread(Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug Global",description=f"Une erreur est survenue au niveau de: `{event_method}`.",colour=discord.Colour.orange())
     embed.add_field(name="Bug:", value=str(error), inline=False)
     embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
@@ -363,8 +369,8 @@ async def on_command_error(ctx: Context, error):
         return await ctx.reply('Missing permissions.', ephemeral=True)
     if isinstance(error, discord.NotFound):
         return await ctx.reply('Discord possède une API de piètre qualité.')
-    guild = bot.get_guild(Botloader.Bot.BotGuild)
-    channel = guild.get_channel_or_thread(Botloader.Bot.BugReportChannel)
+    guild = bot.get_guild(Bot.BotGuild)
+    channel = guild.get_channel_or_thread(Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug",description=f"Commande concernée `{command}`.",colour=discord.Colour.orange())
     embed.add_field(name="Bug:", value=str(error), inline=False)
     embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
@@ -378,6 +384,6 @@ async def on_command_error(ctx: Context, error):
     await ctx.reply('Une erreur est survenue et a été signalé.')
 
 try:
-    bot.run(Botloader.Bot.Token)
+    bot.run(Bot.Token)
 except: print("Bad Pasword")
-os.system(f"python Launcher.py --bot {Botloader.Bot.Name} --restart {r} --pasword {Botloader.Bot.Pasword}")
+os.system(f"python Launcher.py --bot {Bot.Name} --restart {r} --pasword {Bot.Pasword}")
