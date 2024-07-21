@@ -124,4 +124,4 @@ class Common(commands.Cog):
             embed.add_field(name="Nombre:", value=num, inline=False)
             await ctx.reply(embed=embed)
         except Exception as e:
-            Bot.console("WARN", e)
+            Bot.console("ERROR", e)

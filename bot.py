@@ -56,7 +56,7 @@ class BotClient(commands.Bot):
             synced = await self.tree.sync()
             Bot.console("INFO", f'Synced {len(synced)} commands')
         except Exception as e:
-            Bot.console("WARN", f'Error: {e}')
+            Bot.console("ERROR", f'Error: {e}')
         statut = randint(0,1)
         if statut == 1:
             actype = discord.ActivityType.playing
@@ -217,7 +217,9 @@ class BotClient(commands.Bot):
     async def on_message(self, message: discord.Message):
         if message.author == self.user:
             return
-        blw, blws = AutoMod.check_message(message.content)
+        blw, blws = {}, {}
+        if message.content:
+            blw, blws = AutoMod.check_message(message.content)
         if len(blw) != 0:
             automod_channel_id = Data.get_guild_conf(message.guild.id, Data.key['automod_channel'])
             if automod_channel_id is not None:
@@ -258,7 +260,8 @@ class BotClient(commands.Bot):
                     for action in action_list:
                         await action.execute(ctx)
                 except Exception as e:
-                    await ctx.send(f"Error: {str(e)}")
+                    await ctx.send(f"Error : {str(e)}")
+                    Bot.console("ERROR", e)
         #lvtts
         if message.channel.id == 1242185337053380738:
             if Data.get_user_conf(message.guild.id, message.author.id, Data.key['vtts_direct_message']) != "1":

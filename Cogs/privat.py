@@ -49,7 +49,7 @@ class Privat(commands.Cog):
                         r[mots] = trad
         except Exception as e:
             await ctx.reply("Une erreur s'est produite.", ephemeral=True)
-            Bot.console("WARN", e)
+            Bot.console("ERROR", e)
             return
         if mots == 0:
             await ctx.reply(f"Aucun mot trouvé dans le test de {lang}.", ephemeral=True)

@@ -14,7 +14,7 @@ class Admin(commands.Cog):
         self.bot = bot
 
     async def blackliste_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-        commands = ['sayic', 'say', 'dm', 'vtts', 'ftts', 'random']
+        commands = ['sayic', 'say', 'dm', 'vtts', 'ftts', 'random', 'execute']
         return [
                 app_commands.Choice(name=cmd, value=cmd)
                 for cmd in commands if current.lower() in cmd.lower()
@@ -126,6 +126,7 @@ class Admin(commands.Cog):
                     await action.execute(ctx)
             except Exception as e:
                 await ctx.send(f"Error: {str(e)}")
+                Bot.console('ERROR', e)
         else: await Bot.on_refus_interaction(ctx)
 
     @commands.hybrid_command(name="create_command")
@@ -245,14 +246,16 @@ class Admin(commands.Cog):
         bot = self.bot
         data = Data.get_guild_conf(ctx.guild.id, Data.key_value['custom_commands_names'])
         embed = discord.Embed(title="**Liste des Commandes Personnalisées**",description="Liste des commandes personnalisées du serveur.",color=discord.Colour.dark_magenta())
-        commands_list = []
+        commands_list = None
         if data and len(data) > 0:
             data = data.split("\n")
             for command in data:
+                commands_list = []
                 commands_list.append(command)
                 embed.add_field(name=command, value=Data.get_guild_conf(ctx.guild.id, command), inline=False)
         else:
             embed.add_field(name="Aucune commande custom disponible pour ce serveur.",value="Créez en avec `/create_command <prefix> <name>`.",inline=False)
+            return await ctx.reply(embed=embed)
 
         class CommandSelect(Select):
             def __init__(self, commands):

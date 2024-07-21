@@ -1,17 +1,17 @@
 """
-Modul Botloader
+Module Botloader
 ----------------
-Regroupe tout les éléments essentiels
+Regroupe tous les éléments essentiels
 
 Le module permet de récupérer toutes les variables essentielles au bot ainsi que les données des guildes et des utilisateurs.
 
 Data
 -----
-`Data.`
+`Data`
 
 Bot
 ----
-`Bot.`
+`Bot`
 >>> Bot.Name
 >>> Bot.Token
 >>> Bot.Prefix
@@ -49,21 +49,27 @@ class owner_permission:
         else: return True
 class Data:
     """
+    Data
+    -----
+    Module Database
+
     Fonctionnalités
     ----------------
-    Pour récupérer une valeur: 
-        -guild `Data.get_guild_conf`
-        -utilisateur de guild `Data.get_user_conf`
+    Pour récupérer une valeur:
+    - Guild : `Data.get_guild_conf`
+    - Utilisateur de guild : `Data.get_user_conf`
+
     Pour insérer / modifier:
-        -guild `Data.set_guild_conf`
-        -utilisateur de guild `Data.set_user_conf`
+    - Guild : `Data.set_guild_conf`
+    - Utilisateur de guild : `Data.set_user_conf`
+
     Pour supprimer:
-        -guild `Data.delete_guild_conf`
-        -utilisateur `Data.delete_user_conf`
+    - Guild : `Data.delete_guild_conf`
+    - Utilisateur : `Data.delete_user_conf`
 
     Tips
     -----
-    Pour récupérer plus facillement une Clef de Database `Data.<NOM_DE_CLEF>`:
+    Pour récupérer plus facilement une clé de Database : `Data.<NOM_DE_CLEF>`
 
     Exemple
     --------
@@ -273,6 +279,11 @@ class Data:
 
 class Bot():
     """
+    Bot
+    ----
+
+    Variables et fonctions essentielles pour le bot.
+
     Fonctionnalités
     ----------------
 
@@ -287,7 +298,6 @@ class Bot():
     `BugReportChannel` -> int()
     `Prefix` -> str()
     `Pasword` -> str()
-
     """
 
     queue = deque()
@@ -332,8 +342,32 @@ class Bot():
                 await message.reply(f"Félicitations, vous gagnez un niveau (niveau {new_level})!")
 
     def console(type, arg):
-        startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
-        print(f"[{startTime} {type}] {inspect.stack()[1].function}: {arg}")
+        """
+        Utilisation:
+        ------------
+        `type`: type de log (info, warn, error)
+        `arg`: se qui doit être print
+
+        Exemple:
+        --------
+        >>> console("INFO", "Bot loggin")
+        """
+        colors = {
+            "INFO": "\033[94m",  # Blue
+            "WARN": "\033[93m",  # Yellow
+            "ERROR": "\033[91m",  # Red
+            "DEBUG": "\033[92m",  # Green
+            "FUNCTION": "\033[35m",  # Violet
+            "GRAY": "\033[90m",  # Gray
+            "ENDC": "\033[0m"  # Reset color
+        }
+        now = datetime.now(tz)
+        startDate = now.strftime('%Y-%m-%d')
+        startTime = now.strftime('%H:%M:%S')
+        color = colors.get(type.upper(), colors["ENDC"])
+        print(f"{colors['GRAY']}[{startDate} {startTime}] {color}{type}{colors['ENDC']} {colors['FUNCTION']}{inspect.stack()[1].function}{colors['ENDC']}: {arg}")
+
+
 
     def get_token(token, key):
         codes = token.split()

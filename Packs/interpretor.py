@@ -57,7 +57,9 @@ class SendImageFromURLAction:
 
 def parse_actions(ctx, actions: str):
     action_list = []
-    actions = actions.strip()
+    if actions is not None:
+        actions = actions.strip()
+    else: return action_list
     
     if '}&' in actions:
         action_strs = actions.split('}&')
