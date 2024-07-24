@@ -12,7 +12,7 @@ class Privat(commands.Cog):
         self.bot = bot
         
     async def voca_autocompletion(self, interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
-            langs = ['allemand','anglais', 'test']
+            langs = ['test']
             return [
                     app_commands.Choice(name=lang, value=lang)
                     for lang in langs if current.lower() in lang.lower()
