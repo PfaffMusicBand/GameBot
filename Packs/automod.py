@@ -2,7 +2,29 @@ import requests
 from Packs.Botloader import Bot
 
 class AutoMod:
-    API_KEY = 'smaugue_jp56tkJ6LTk8SF94OPs1zRbSHG8pvvtO'
+    """
+    API Automod
+    -----------
+    API pour l'auto-modération
+
+    ENDPOINTS
+    --------
+    >>> `/check_message` -> "black_word":{"message_word":"true_word"}, "black_word_similarity":{"message_word":"similarity"}, "version":"version"
+    >>> `/version` -> "version":"version"
+
+    FONCTIONS
+    ---------
+
+    >>> `check_message(message)` -> bw={"message_word":"true_word"}, bws={"message_word":"similarity"}
+    >>> `version()` -> v="version format x.x.x"
+
+    Exemple
+    -------
+    >>> bw, bws = check_message(message)
+    >>> for key in blw:
+    >>>     print(f"Mot {key} détecté: {round(blws[key], 2) * 100}% de ressemblance avec {blw[key]}.")
+    """
+    API_KEY = 'your_api_key'
 
     def check_message(message: str):
         api_url = 'http://automod.smaugue.lol:5000/check_message'
