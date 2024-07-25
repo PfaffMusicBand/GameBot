@@ -1,6 +1,6 @@
-VERSION = "1.2.10"
+VERSION = "1.2.11"
 DATE = "26/07/24"
-PATCH = "Ajout de la commande `uptime`."
+PATCH = "Ajout de la commande `uptime`.\nCorrection gestion des erreur de l'API AutoMod."
 OLD = "Utilisation de l'API AutoMod pour l'automodération."
 OLD = "Désactivation de commandes -> `play`, `queue`."
 OLD = "Révision du système de Databases.\nSuppression de la command `srvconf` et ajout de `automod_channel`"

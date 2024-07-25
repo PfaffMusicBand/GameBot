@@ -10,6 +10,7 @@ from random import randint
 from typing import List
 from Packs.automod import AutoMod
 from Packs.Botloader import Data, Bot
+from Packs.version import BOT_VERSION
 class Common(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -134,13 +135,14 @@ class Common(commands.Cog):
         uptime_str = self.format_uptime(uptime_seconds)
         latency = round(self.bot.latency * 1000)
         embed = discord.Embed(title="Bot Status", color=discord.Color.blue())
-        embed.add_field(name="Ping", value=f"{latency} ms")
-        embed.add_field(name="Uptime", value=uptime_str)
+        embed.add_field(name="Ping", value=f"{latency} ms", inline=False)
+        embed.add_field(name="Uptime", value=uptime_str, inline=False)
+        embed.add_field(name="Version", value=BOT_VERSION, inline=False)
         api_statut, api_version = AutoMod.handcheck()
         if api_statut:
-            embed.add_field(name="AutoMod API Statut", value=f":green_circle: Onlin v{api_version}")
+            embed.add_field(name="AutoMod API Statut", value=f":green_circle: Onlin v{api_version}", inline=False)
         else:
-            embed.add_field(name="AutoMod API Statut", value=f":red_circle: Offlin")
+            embed.add_field(name="AutoMod API Statut", value=f":red_circle: Offlin", inline=False)
         await ctx.send(embed=embed)
 
     def format_uptime(self, seconds):

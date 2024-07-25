@@ -1,5 +1,6 @@
 import requests
 from Packs.Botloader import Bot
+from requests.exceptions import ConnectionError, Timeout
 
 class AutoMod:
     """
@@ -24,53 +25,61 @@ class AutoMod:
     >>> for key in blw:
     >>>     print(f"Mot {key} détecté: {round(blws[key], 2) * 100}% de ressemblance avec {blw[key]}.")
     """
-    API_KEY = 'your_api_key'
+    API_KEY = "smaugue_jp56tkJ6LTk8SF94OPs1zRbSHG8pvvtO"
 
     def check_message(message: str):
+        bw = {}
+        bws = {}
         api_url = 'http://automod.smaugue.lol:5000/check_message'
         data = {'message': message}
         headers = {'x-api-key': AutoMod.API_KEY}
+        try:
+            response = requests.post(api_url, json=data, headers=headers, timeout=5)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+        except (ConnectionError, Timeout) as e:
+            Bot.console("ERROR", f"Connection error: {e}")
+            return bw, bws
+        except requests.HTTPError as e:
+            Bot.console("ERROR", f"HTTP error: {e.response.status_code}: {e.response.text}")
+            return bw, bws
 
-        response = requests.post(api_url, json=data, headers=headers)
-
-        if response.status_code == 200:
-            response_data = response.json()
-            bw = response_data.get('black_word')
-            bws = response_data.get('black_word_similarity')
-        else:
-            Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
-            bw = {}
-            bws = {}
+        response_data = response.json()
+        bw = response_data.get('black_word')
+        bws = response_data.get('black_word_similarity')
         return bw, bws
 
     def automod_version():
         api_url = 'http://automod.smaugue.lol:5000/version'
         headers = {'x-api-key': AutoMod.API_KEY}
-        response = requests.post(api_url, headers=headers)
-        
-        if response.status_code == 200:
-            response_data = response.json()
-            v = response_data.get('version')
-        else:
-            Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
-            v = 'uncknow'
-        return v
-    
+        try:
+            response = requests.post(api_url, headers=headers, timeout=5)
+            response.raise_for_status()
+        except (ConnectionError, Timeout) as e:
+            Bot.console("ERROR", f"Connection error: {e}")
+            return 'x.x.x'
+        except requests.HTTPError as e:
+            Bot.console("ERROR", f"HTTP error: {e.response.status_code}: {e.response.text}")
+            return 'x.x.x'
+
+        response_data = response.json()
+        return response_data.get('version', 'unknown')
+
     def handcheck():
         api_url = 'http://automod.smaugue.lol:5000/handcheck'
         headers = {'x-api-key': AutoMod.API_KEY}
         try:
-            response = requests.post(api_url, headers=headers)
-
-            if response.status_code == 200:
-                response_data = response.json()
-                v = response_data.get('version')
-                return True, v
-            else:
-                Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
-                return False, "x.x.x"
-        except ConnectionError:
-            Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
+            response = requests.post(api_url, headers=headers, timeout=5)
+            response.raise_for_status()
+        except (ConnectionError, Timeout) as e:
+            Bot.console("ERROR", f"Connection error: {e}")
+            return False, "x.x.x"
+        except requests.HTTPError as e:
+            Bot.console("ERROR", f"HTTP error: {e.response.status_code}: {e.response.text}")
+            return False, "x.x.x"
+        except Exception as e:
+            Bot.console("ERROR", f"Unexpected error: {e}")
             return False, "x.x.x"
 
-
+        response_data = response.json()
+        version = response_data.get('version', "x.x.x")
+        return True, version
