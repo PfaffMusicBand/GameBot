@@ -219,18 +219,11 @@ class BotClient(commands.Bot):
             return
         blw, blws = {}, {}
         if message.content:
-            print("ok")
             blw, blws = AutoMod.check_message(message.content)
-            print(blw)
             v = AutoMod.automod_version()
-            print("ok")
         if len(blw) != 0:
-            print("what the heal")
             automod_channel_id = Data.get_guild_conf(message.guild.id, Data.AUTOMOD_CHANNEL)
-            print(automod_channel_id)
-            print('tamère')
             if automod_channel_id is not None:
-                print("rererererok")
                 channel = message.guild.get_channel(int(automod_channel_id))
                 if channel:
                     if isinstance(message.channel, discord.channel.DMChannel):
@@ -244,7 +237,6 @@ class BotClient(commands.Bot):
                     embed.add_field(name="Channel & Link", value=message.jump_url, inline=False)
                     embed.add_field(name="Message", value=message.content, inline=False)
                     embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
-                    print('nani')
                     embed.set_footer(text=f"API AutoMod v{v}")
                     view = discord.ui.View()
                     item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
@@ -257,7 +249,6 @@ class BotClient(commands.Bot):
                     if channel.id == GameHub.MessageChannel:
                         await channel.send("||<@575746878583472128>||||<@724996627366019133>||", embed=embed, view=view)
                     else:
-                        print('bruh')
                         await channel.send(embed=embed, view=view)
         data = Data.get_guild_conf(message.guild.id, Data.key['custom_commands_names'])
         if data:
