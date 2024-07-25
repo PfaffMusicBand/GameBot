@@ -107,10 +107,6 @@ class BotClient(commands.Bot):
     async def version(self, ctx: Context):
         await self.versions(type="commande", ctx=ctx)
         
-    async def ping(self, ctx: Context):
-        embed = discord.Embed(title="PONG", description=f":ping_pong: Le ping est de **{round(self.latency)}** secondes!")
-        await ctx.send(embed=embed)
-        
     async def restart(self, ctx: Context):
         if owner_permission.check(ctx.author.id) != True:
             return await ctx.reply("Vous ne disposez pas des autorisations nécéssaire.")
@@ -330,10 +326,6 @@ bot.remove_command('help')
 @bot.command(name="restart")
 async def restart(ctx):
     await bot.restart(ctx)
-    
-@bot.command(name="ping")
-async def ping(ctx):
-    await bot.ping(ctx)
 
 @bot.hybrid_command(name="version")
 async def version(ctx):

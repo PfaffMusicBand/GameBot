@@ -1,7 +1,7 @@
 import discord
-from Packs.Botloader import Data, Bot
 import asyncio
 import os
+import time
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -9,10 +9,11 @@ from gtts import gTTS
 from random import randint
 from typing import List
 from Packs.automod import AutoMod
-
+from Packs.Botloader import Data, Bot
 class Common(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.start_time = time.time()
 
     async def cmd_autocompletion(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
         cmds = ['play', 'join', 'leave', 'stop', 'vtts', 'ftts', 'dm', 'execute']
@@ -125,3 +126,26 @@ class Common(commands.Cog):
             await ctx.reply(embed=embed)
         except Exception as e:
             Bot.console("ERROR", e)
+
+    @commands.hybrid_command(name="uptime")
+    async def uptime(self, ctx: commands.Context):
+        current_time = time.time()
+        uptime_seconds = int(current_time - self.start_time)
+        uptime_str = self.format_uptime(uptime_seconds)
+        latency = round(self.bot.latency * 1000)
+        embed = discord.Embed(title="Bot Status", color=discord.Color.blue())
+        embed.add_field(name="Ping", value=f"{latency} ms")
+        embed.add_field(name="Uptime", value=uptime_str)
+        api_statut, api_version = AutoMod.handcheck()
+        if api_statut:
+            embed.add_field(name="AutoMod API Statut", value=f":green_circle: Onlin v{api_version}")
+        else:
+            embed.add_field(name="AutoMod API Statut", value=f":red_circle: Offlin")
+        await ctx.send(embed=embed)
+
+    def format_uptime(self, seconds):
+        minutes, seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        days, hours = divmod(hours, 24)
+        
+        return f"{days}d {hours}h {minutes}m {seconds}s"

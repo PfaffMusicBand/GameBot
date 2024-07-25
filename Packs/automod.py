@@ -9,8 +9,8 @@ class AutoMod:
 
     ENDPOINTS
     --------
-    >>> `/check_message` -> "black_word":{"message_word":"true_word"}, "black_word_similarity":{"message_word":"similarity"}, "version":"version"
-    >>> `/version` -> "version":"version"
+    >>> `/check_message` -> "black_word":{"message_word":"true_word"}, "black_word_similarity":{"message_word":"similarity"}, "version":"x.x.x"
+    >>> `/version` -> "version":"x.x.x"
 
     FONCTIONS
     ---------
@@ -55,3 +55,18 @@ class AutoMod:
             Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
             v = 'uncknow'
         return v
+    
+    def handcheck():
+        api_url = 'http://automod.smaugue.lol:5000/handcheck'
+        headers = {'x-api-key': AutoMod.API_KEY}
+        response = requests.post(api_url, headers=headers)
+
+        if response.status_code == 200:
+            response_data = response.json()
+            v = response_data.get('version')
+            return True, v
+        else:
+            Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
+            return False, "x.x.x"
+
+
