@@ -1,4 +1,4 @@
-VERSION = "1.2.9"
+VERSION = "1.2.10"
 DATE = "26/07/24"
 PATCH = "Ajout de la commande `uptime`."
 OLD = "Utilisation de l'API AutoMod pour l'automodération."

@@ -59,13 +59,17 @@ class AutoMod:
     def handcheck():
         api_url = 'http://automod.smaugue.lol:5000/handcheck'
         headers = {'x-api-key': AutoMod.API_KEY}
-        response = requests.post(api_url, headers=headers)
+        try:
+            response = requests.post(api_url, headers=headers)
 
-        if response.status_code == 200:
-            response_data = response.json()
-            v = response_data.get('version')
-            return True, v
-        else:
+            if response.status_code == 200:
+                response_data = response.json()
+                v = response_data.get('version')
+                return True, v
+            else:
+                Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
+                return False, "x.x.x"
+        except ConnectionError:
             Bot.console("ERROR", f"Erreur {response.status_code}: {response.text}")
             return False, "x.x.x"
 
