@@ -69,6 +69,7 @@ def parse_actions(ctx, actions: str):
     def check_secondary(content: str):
         calc_matches = re.findall(r'Calc\[(.*?)\]', content)
         mention_matches = re.findall(r'@Mention', content)
+        copy_matches = re.findall(r'Copy\[(.*?)\]', content)
         for calc_expression in calc_matches:
             try:
                 result = eval(calc_expression)
@@ -78,6 +79,11 @@ def parse_actions(ctx, actions: str):
         for mention in mention_matches:
             try:
                 content = content.replace(f'@Mention', ctx.author.mention)
+            except Exception as e:
+                Bot.console("WARN", f"Erreur: {e}")
+        for copy in copy_matches:
+            try:
+                content = content.replace(f'Copy[{copy}]', f"```{copy}```")
             except Exception as e:
                 Bot.console("WARN", f"Erreur: {e}")
         return content

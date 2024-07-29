@@ -215,7 +215,9 @@ class BotClient(commands.Bot):
             return
         blw, blws = {}, {}
         if message.content:
-            blw, blws = AutoMod.check_message(message.content)
+            level = Data.get_guild_conf(message.guild.id, Data.AUTOMOD_LEVEL)
+            if not level: level = 3
+            blw, blws = AutoMod.check_message(message.content, level = level)
             v = AutoMod.automod_version()
         if len(blw) != 0:
             automod_channel_id = Data.get_guild_conf(message.guild.id, Data.AUTOMOD_CHANNEL)
@@ -343,7 +345,7 @@ async def on_error(event_method, *args, **kwargs):
     guild = bot.get_guild(Bot.BotGuild)
     channel = guild.get_channel_or_thread(Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug Global",description=f"Une erreur est survenue au niveau de: `{event_method}`.",colour=discord.Colour.orange())
-    embed.add_field(name="Bug:", value=str(error), inline=False)
+    embed.add_field(name="Bug:", value=f"```{error}```", inline=False)
     embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
     embed.set_author(name="Rapport Automatique", icon_url=bot.user.avatar.url)
     view = discord.ui.View()
@@ -369,7 +371,7 @@ async def on_command_error(ctx: Context, error):
     guild = bot.get_guild(Bot.BotGuild)
     channel = guild.get_channel_or_thread(Bot.BugReportChannel)
     embed = discord.Embed(title="Rapport de Bug",description=f"Commande concernée `{command}`.",colour=discord.Colour.orange())
-    embed.add_field(name="Bug:", value=str(error), inline=False)
+    embed.add_field(name="Bug:", value=f"```{error}```", inline=False)
     embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
     embed.set_author(name="Rapport Automatique", icon_url=bot.user.avatar.url)
     view = discord.ui.View()

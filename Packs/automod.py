@@ -1,5 +1,5 @@
 import requests
-from Packs.Botloader import Bot
+from Packs.Botloader import Data,Bot
 from requests.exceptions import ConnectionError, Timeout
 
 class AutoMod:
@@ -27,11 +27,11 @@ class AutoMod:
     """
     API_KEY = "smaugue_jp56tkJ6LTk8SF94OPs1zRbSHG8pvvtO"
 
-    def check_message(message: str):
+    def check_message(message: str,*,level = 3):
         bw = {}
         bws = {}
         api_url = 'http://automod.smaugue.lol:5000/check_message'
-        data = {'message': message}
+        data = {'level':level,'message': message}
         headers = {'x-api-key': AutoMod.API_KEY}
         try:
             response = requests.post(api_url, json=data, headers=headers, timeout=5)

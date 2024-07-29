@@ -97,6 +97,7 @@ class Data:
         'dm':'command_dm_permission',
         'dm_blackliste':'blackliste_dm_id',
         'automod_channel':'automod_channel_id',
+        'automod_level': 'automod_action_level',
         'vtts_directe_message':'vtts_directe_message'
 
     }
@@ -114,7 +115,8 @@ class Data:
     DM = keys[8]
     DM_BLACKLISTE = keys[9]
     AUTOMOD_CHANNEL = keys[10]
-    VTTS_DIRECTE_MESSAGE = keys[11]
+    AUTOMOD_LEVEL = keys[11]
+    VTTS_DIRECTE_MESSAGE = keys[12]
 
     def create_tables(self):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS guild_conf (

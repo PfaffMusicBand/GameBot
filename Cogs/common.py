@@ -17,7 +17,7 @@ class Common(commands.Cog):
         self.start_time = time.time()
 
     async def cmd_autocompletion(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
-        cmds = ['play', 'join', 'leave', 'stop', 'vtts', 'ftts', 'dm', 'execute']
+        cmds = ['join', 'leave', 'stop', 'vtts', 'ftts', 'dm', 'execute']
         return [
             app_commands.Choice(name=cmd, value=cmd)
             for cmd in cmds if current.lower() in cmd.lower()
@@ -36,7 +36,7 @@ class Common(commands.Cog):
         guild = self.bot.get_guild(Bot.BotGuild)
         channel = guild.get_channel_or_thread(Bot.BugReportChannel)
         embed = discord.Embed(title="Rapport de Bug", description=f"Commande concernée `{command}`.", colour=discord.colour.Color.orange())
-        embed.add_field(name="Bug:", value=bug, inline=False)
+        embed.add_field(name="Bug:", value=f"```{bug}```", inline=False)
         embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
         embed.set_author(name=ctx.author, icon_url=ctx.author.avatar)
         view = discord.ui.View()
