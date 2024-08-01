@@ -38,6 +38,7 @@ class Common(commands.Cog):
         embed = discord.Embed(title="Rapport de Bug", description=f"Commande concernée `{command}`.", colour=discord.colour.Color.orange())
         embed.add_field(name="Bug:", value=f"```{bug}```", inline=False)
         embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
+        embed.set_footer(text=f"Bot V{BOT_VERSION}")
         embed.set_author(name=ctx.author, icon_url=ctx.author.avatar)
         view = discord.ui.View()
         item = discord.ui.Button(style=discord.ButtonStyle.green, label="Corriger", custom_id="bugreport_correction", disabled=False)
@@ -140,9 +141,9 @@ class Common(commands.Cog):
         embed.add_field(name="Version", value=BOT_VERSION, inline=False)
         api_statut, api_version = AutoMod.handcheck()
         if api_statut:
-            embed.add_field(name="AutoMod API Statut", value=f":green_circle: Onlin v{api_version}", inline=False)
+            embed.add_field(name="AutoMod API Statut", value=f":green_circle: Online v{api_version}", inline=False)
         else:
-            embed.add_field(name="AutoMod API Statut", value=f":red_circle: Offlin", inline=False)
+            embed.add_field(name="AutoMod API Statut", value=f":red_circle: Offline", inline=False)
         await ctx.send(embed=embed)
 
     def format_uptime(self, seconds):

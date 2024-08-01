@@ -185,7 +185,7 @@ class BotClient(commands.Bot):
                 view.add_item(item=item)
                 embeds = interaction.message.embeds.copy()
                 embed = embeds[0]
-                embed.set_field_at(index=1, name=embed.fields[1].name, value="Corrigé.", inline=embed.fields[1].inline)
+                embed.set_field_at(index=1, name=embed.fields[1].name, value=f"Corrigé (prochaine version).", inline=embed.fields[1].inline)
                 embed.color = discord.Color.green()
                 return await interaction.message.edit(embed=embed, view=view)
             if interaction.data["custom_id"] == "bugreport_correction_n" and interaction.user.id == owner_permission.owner_id:

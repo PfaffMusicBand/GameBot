@@ -367,7 +367,7 @@ class Bot():
         startDate = now.strftime('%Y-%m-%d')
         startTime = now.strftime('%H:%M:%S')
         color = colors.get(type.upper(), colors["ENDC"])
-        print(f"{colors['GRAY']}[{startDate} {startTime}] {color}{type}{colors['ENDC']} {colors['FUNCTION']}{inspect.stack()[1].function}{colors['ENDC']}: {arg}")
+        print(f"{colors['GRAY']}{startDate} {startTime} {color}{type}{colors['ENDC']} {colors['FUNCTION']}{inspect.stack()[1].function}{colors['ENDC']}: {arg}")
 
 
 

@@ -53,7 +53,7 @@ class SendImageFromURLAction:
                         os.remove('temp_image.png')
                     else:
                         await ctx.send('Failed to retrieve image from URL.')
-        except: print("sa pue la merde")
+        except Exception as e: Bot.console("WARN", f"Erreur:{e}")
 
 def parse_actions(ctx, actions: str):
     action_list = []

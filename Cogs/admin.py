@@ -116,7 +116,7 @@ class Admin(commands.Cog):
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
         
-    @commands.hybrid_command(name="automod_level", help = "Définit la sensibilité de l'automod 1 = insultes graves uniquement, 3 = langage grossier inclu.")
+    @commands.hybrid_command(name="automod_level", help = "Définit la sensibilité de l'automod 1 = insultes graves uniquement, 3 = langage grossier inclus.")
     @commands.has_permissions(administrator = True)
     @commands.guild_only()
     async def automod_level(self, ctx: Context, level = 3):
@@ -124,12 +124,12 @@ class Admin(commands.Cog):
         if data is not None:
             try:
                 Data.set_guild_conf(ctx.guild.id, Data.AUTOMOD_LEVEL, level)
-                return await ctx.reply(f"La puissance de l'automod a bien été modifié: {data} => {level}.")
+                return await ctx.reply(f"La sensibilité de l'automod a bien été modifié: {data} => {level}.")
             except Exception as e:
                 return await ctx.reply(f"Erreur: {e}.")
         try:
             Data.set_guild_conf(ctx.guild.id, Data.AUTOMOD_LEVEL, level)
-            return await ctx.reply(f"La puissance de l'automod a bien été définit sur {level}.")
+            return await ctx.reply(f"La sensibilité de l'automod a bien été définit sur {level}.")
         except Exception as e:
             return await ctx.reply(f"Erreur: {e}.")
     

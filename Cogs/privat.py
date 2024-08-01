@@ -140,7 +140,7 @@ class Privat(commands.Cog):
         if member_blackliste is not None:
             if str(ctx.author.id) in member_blackliste:
                 return await ctx.reply(f"Le message a été exprécément refusé par {mention.mention}.")
-        if Data.get_guild_conf(ctx.guild.id, Data.key["automod_channel"]):
+        if Data.get_guild_conf(ctx.guild.id, Data.AUTOMOD_CHANNEL):
             if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['dm']) == "1":
                 message = ctx.message
                 if len(message.attachments) > 1:
