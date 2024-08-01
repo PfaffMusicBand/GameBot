@@ -137,21 +137,16 @@ class BotClient(commands.Bot):
                 if b == "y":
                     blackliste = Data.get_user_conf(guild, interaction.user.id, Data.DM_BLACKLISTE)
                     data = ""
-                    print(data)
                     if blackliste:
-                        print(blackliste)
                         data = blackliste
-                    print("sa pue la merde")
                     data = data+"\n"+user
-                    print(data)
                     Data.set_user_conf(guild, interaction.user.id, Data.DM_BLACKLISTE, data)
-                    print("ok")
                     title = "Le message a bien été signalé et le membre bloqué.\nSi vous avez d'autre problèmes, n'ésitez pas à nous contacter:\nsupport@gamebot.smaugue.lol"
                     placeholder = "Signalé et Bloqué"
                 else: 
                     title = "Le message a bien été signalé.\nSi vous avez d'autre problèmes, n'ésitez pas à nous contacter:\nsupport@gamebot.smaugue.lol"
                     placeholder = "Signalé"
-                automod_channel_id = Data.get_guild_conf(guild, Data.key['automod_channel'])
+                automod_channel_id = Data.get_guild_conf(guild, Data.AUTOMOD_CHANNEL)
                 try:
                     channel = bot.get_guild(int(guild)).get_channel(int(automod_channel_id))
                 except Exception as e:
@@ -161,6 +156,7 @@ class BotClient(commands.Bot):
                 embed.add_field(name="User", value=bot.get_user(int(user)).mention, inline=False)
                 embed.add_field(name="Target", value=interaction.user.mention, inline=False)
                 embed.add_field(name="Message", value=msg, inline=False)
+                embed.add_field(name="Mesure de l'utilisateur (Target)", value=placeholder, inline=False)
                 embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
                 view = discord.ui.View()
                 item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
