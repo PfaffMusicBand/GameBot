@@ -150,7 +150,7 @@ class BotClient(commands.Bot):
                 try:
                     channel = bot.get_guild(int(guild)).get_channel(int(automod_channel_id))
                 except Exception as e:
-                    return await interaction.channel.send(f"Une erreur s'est produite: {e}. \n Veuillez contacter les administarteur du serveur don est issu le message ({ctx.guild})")
+                    return await interaction.channel.send(f"Une erreur s'est produite: {e}. \n Veuillez contacter les administarteur du serveur dont est issu le message ({ctx.guild})")
                 startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
                 embed = discord.Embed(title="Signalement de Spam en DM", description=startTime, color=discord.Color.brand_red())
                 embed.add_field(name="User", value=bot.get_user(int(user)).mention, inline=False)
@@ -199,7 +199,7 @@ class BotClient(commands.Bot):
                 view.add_item(item=item)
                 embeds = interaction.message.embeds.copy()
                 embed = embeds[0]
-                embed.set_field_at(index=3, name=embed.fields[3].name, value=f"Modéré par {interaction.user.mention}.", inline=embed.fields[1].inline)
+                embed.set_field_at(index=4, name=embed.fields[3].name, value=f"Modéré par {interaction.user.mention}.", inline=embed.fields[1].inline)
                 embed.color = discord.Color.dark_red()
                 return await interaction.message.edit(embed=embed, view=view)
             if interaction.data["custom_id"] == "test_1":
