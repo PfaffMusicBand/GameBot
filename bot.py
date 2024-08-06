@@ -156,8 +156,8 @@ class BotClient(commands.Bot):
                 embed.add_field(name="User", value=bot.get_user(int(user)).mention, inline=False)
                 embed.add_field(name="Target", value=interaction.user.mention, inline=False)
                 embed.add_field(name="Message", value=msg, inline=False)
-                embed.add_field(name="Mesure de l'utilisateur (Target)", value=placeholder, inline=False)
                 embed.add_field(name="Etat de la modération:", value="En cour...", inline=False)
+                embed.add_field(name="Mesure de l'utilisateur (Target)", value=placeholder, inline=False)
                 view = discord.ui.View()
                 item = discord.ui.Button(style=discord.ButtonStyle.danger, label="Modérer", custom_id="automod_action", disabled=False)
                 view.add_item(item=item)
@@ -199,7 +199,7 @@ class BotClient(commands.Bot):
                 view.add_item(item=item)
                 embeds = interaction.message.embeds.copy()
                 embed = embeds[0]
-                embed.set_field_at(index=4, name=embed.fields[3].name, value=f"Modéré par {interaction.user.mention}.", inline=embed.fields[1].inline)
+                embed.set_field_at(index=3, name=embed.fields[3].name, value=f"Modéré par {interaction.user.mention}.", inline=embed.fields[1].inline)
                 embed.color = discord.Color.dark_red()
                 return await interaction.message.edit(embed=embed, view=view)
             if interaction.data["custom_id"] == "test_1":
