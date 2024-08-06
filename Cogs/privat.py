@@ -1,6 +1,7 @@
 import discord
 import os
 from Packs.Botloader import Data, Bot
+from Packs.automod import AutoMod
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -136,12 +137,15 @@ class Privat(commands.Cog):
     @commands.hybrid_command(name="dm")
     @commands.guild_only()
     async def dm(self, ctx: Context, mention: discord.User,*,msg):
-        member_blackliste = Data.get_user_conf(ctx.guild.id, mention.id, Data.key["dm_blackliste"])
+        blw, blws = AutoMod.check_message(msg)
+        if len(blw) != 0:
+            return Bot.on_refus_interaction(ctx)
+        member_blackliste = Data.get_user_conf(ctx.guild.id, mention.id, Data.DM_BLACKLISTE)
         if member_blackliste is not None:
             if str(ctx.author.id) in member_blackliste:
                 return await ctx.reply(f"Le message a été exprécément refusé par {mention.mention}.")
         if Data.get_guild_conf(ctx.guild.id, Data.AUTOMOD_CHANNEL):
-            if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['dm']) == "1":
+            if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.DM) == "1":
                 message = ctx.message
                 if len(message.attachments) > 1:
                     return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")
