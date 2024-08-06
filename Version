@@ -1,4 +1,4 @@
-VERSION = "1.3.5"
+VERSION = "1.3.6"
 DATE = "06/08/24"
 PATCH = "Renfforcement de la sécurité de le commande DM."
 OLD3.4 = "Corrections multiples des Signalements en DM + automod classique."

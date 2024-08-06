@@ -139,7 +139,7 @@ class Privat(commands.Cog):
     async def dm(self, ctx: Context, mention: discord.User,*,msg):
         blw, blws = AutoMod.check_message(msg)
         if len(blw) != 0:
-            return Bot.on_refus_interaction(ctx)
+            return await Bot.on_refus_interaction(ctx)
         member_blackliste = Data.get_user_conf(ctx.guild.id, mention.id, Data.DM_BLACKLISTE)
         if member_blackliste is not None:
             if str(ctx.author.id) in member_blackliste:
