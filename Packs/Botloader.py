@@ -286,8 +286,8 @@ class Bot():
 
     Variables et fonctions essentielles pour le bot.
 
-    Fonctionnalités
-    ----------------
+    Variables
+    ----------
 
     Permet de réccupérer des info sur le Bot
     
@@ -300,6 +300,13 @@ class Bot():
     `BugReportChannel` -> int()
     `Prefix` -> str()
     `Pasword` -> str()
+
+    Fonctions
+    ----------
+
+    >>> `console` -> (voir Bot.console)
+    >>> `maketts(text, langage, name = "output.mp3")` -> Retourne le nom d'un mp3 du texte fournit dans la langue fournit
+
     """
 
     queue = deque()
@@ -347,7 +354,7 @@ class Bot():
         """
         Utilisation:
         ------------
-        `type`: type de log (info, warn, error)
+        `type`: type de log (info, warn, error, debug)
         `arg`: se qui doit être print
 
         Exemple:

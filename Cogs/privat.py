@@ -1,5 +1,6 @@
 import discord
 import os
+import asyncio
 from Packs.Botloader import Data, Bot
 from Packs.automod import AutoMod
 from discord import app_commands
@@ -31,7 +32,6 @@ class Privat(commands.Cog):
         else: return await Bot.on_refus_interaction(interaction)
 
     async def test_voca_logic(self, ctx: Context, lang, nombre):
-        Privat.voca_user_data[ctx.author.id] = f"{lang}, {nombre}"
         q = {}
         r = {}
         mots = 0
@@ -90,7 +90,7 @@ class Privat(commands.Cog):
                 await ctx.channel.send(embed=embed)
                 def checkMessage(message):
                     return ctx.author == message.author and ctx.channel == message.channel
-                rep = await self.bot.wait_for("message", check = checkMessage)
+                rep = await self.wait_for("message", check = checkMessage)
                 if rep.content in reponse:
                     j, titre, color, url = j + 1, "Juste", discord.Colour.green(), "https://cdn3.emoji.gg/emojis/2990_yes.png"
                 else:
@@ -104,8 +104,11 @@ class Privat(commands.Cog):
                             """, color=color)
                 embed.set_thumbnail(url = url)
                 await ctx.channel.send(embed=embed)
-                await ctx.channel.send(file=discord.File(Bot.maketts(reponse, lg, name=f"{reponse}.mp3")))
-                os.remove(f'{reponse}.mp3')
+                try:
+                    await ctx.channel.send(file=discord.File(Bot.maketts(reponse, lg, name=f"{reponse}.mp3")))
+                    os.remove(f'{reponse}.mp3')
+                except Exception as e:
+                    Bot.console('WARN', e)
             note = j*20/total
             note = round(note, 1)
             reu = round(reu, 2)
@@ -126,12 +129,28 @@ class Privat(commands.Cog):
                     value = f"{value}\n**{r[nbr]}**:\n{q[nbr]}"
                 embed.add_field(name=f":sweat:", value=value, inline=False)
                 await ctx.channel.send(embed=embed)
-        view = discord.ui.View()
-        item = discord.ui.Button(style=discord.ButtonStyle.blurple, label="Relancer le test", custom_id="restart_test", disabled=False)
-        view.add_item(item=item)
-        Privat.ctx_mapping[ctx.author.id] = ctx
-        await ctx.channel.send(view=view)
-        return
+            class ActionSelector(discord.ui.View):
+                def __init__(sf, ctx, timeout=60):
+                    super().__init__(timeout=timeout)
+                    sf.ctx = ctx
+                    sf.message_button_disabled = False
+                    sf.message = None
+                @discord.ui.button(style=discord.ButtonStyle.blurple, label="Relancer le test", custom_id="restart_test")
+                async def restart_button(sf, button: discord.ui.Button, interaction: discord.Interaction):
+                    if not sf.message_button_disabled:
+                        sf.message_button_disabled = True
+                        button.disabled = True
+                        await interaction.response.edit_message(view=sf)
+                        await Privat.test_voca_logic(self, sf.ctx, lang, nombre)
+                async def on_timeout(sf):
+                    sf.message_button_disabled = True
+                    for child in sf.children:
+                        if isinstance(child, discord.ui.Button):
+                            child.disabled = True
+                    if sf.message:
+                        await sf.message.edit(view=sf)
+            view = ActionSelector(ctx, 60)
+            view.message = await ctx.channel.send(view=view)
 
     #spam commande
     @commands.hybrid_command(name="dm")
@@ -145,7 +164,8 @@ class Privat(commands.Cog):
             if str(ctx.author.id) in member_blackliste:
                 return await ctx.reply(f"Le message a été exprécément refusé par {mention.mention}.")
         if Data.get_guild_conf(ctx.guild.id, Data.AUTOMOD_CHANNEL):
-            if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.DM) == "1":
+            print(Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['dm']))
+            if Data.get_user_conf(ctx.guild.id, ctx.author.id, Data.key['dm']) == "1":
                 message = ctx.message
                 if len(message.attachments) > 1:
                     return await ctx.reply("Vous ne pouvez envoyer qu'un seul fichier à la fois.")

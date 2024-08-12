@@ -13,8 +13,9 @@ class Owner(commands.Cog):
     async def off(self, ctx: Context):
         if not owner_permission.check(ctx.author.id):
             return
+        await self.bot.change_presence(status=discord.Status.dnd, activity=discord.Game("Arrret en cour..."))
         await ctx.send("Bot was offline.")
-        await asyncio.sleep(3)
+        await asyncio.sleep(1)
         print("")
         Bot.console("INFO", f'Bot Closed')
         print("")

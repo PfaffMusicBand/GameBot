@@ -4,10 +4,10 @@ import asyncio
 import os
 import discord.ext
 import discord.ext.commands
-from Packs.Botloader import tz,owner_permission, Data, Bot, GameHub
 import argparse
 import pytz
 import glob
+from Packs.Botloader import tz,owner_permission, Data, Bot, GameHub
 from random import randint
 from typing import Any
 from discord.ext import commands
@@ -42,16 +42,14 @@ class BotClient(commands.Bot):
         self.command_descriptions = {}
 
     async def on_ready(self):
+        await self.change_presence(status=discord.Status.online, activity=discord.Game("Chargement des cookis!"))
         await self.add_cog(Privat(self))#, guild=Botloader.BetaBelouga.BotGuild)
         await self.add_cog(Owner(self))#, guild=Botloader.BetaBelouga.BotGuild)
         await self.add_cog(Common(self))
         await self.add_cog(Admin(self))
-        try:
-            await self.add_cog(Music(self))
-        except Exception as e: print(e)
+        await self.add_cog(Music(self))
         Bot.console("INFO", f'Logged in as {self.user} (ID: {self.user.id})')
         await self.versions(type="on_ready", ctx=None)
-        await self.change_presence(status=discord.Status.online, activity=discord.Game("Chargement des cookis!"))
         try:
             synced = await self.tree.sync()
             Bot.console("INFO", f'Synced {len(synced)} commands')
@@ -110,8 +108,9 @@ class BotClient(commands.Bot):
     async def restart(self, ctx: Context):
         if owner_permission.check(ctx.author.id) != True:
             return await ctx.reply("Vous ne disposez pas des autorisations nécéssaire.")
+        await self.change_presence(status=discord.Status.dnd, activity=discord.Game("Redémarage en cour..."))
         await ctx.send("Bot was offline for restart.")
-        await asyncio.sleep(3)
+        await asyncio.sleep(1)
         print("")
         Bot.console("INFO", f'Bot Closed for restart')
         print("")
@@ -124,14 +123,6 @@ class BotClient(commands.Bot):
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.type == discord.InteractionType.component:
             await interaction.response.defer()
-            if interaction.data["custom_id"] == "restart_test":
-                view = discord.ui.View()
-                item = discord.ui.Button(style=discord.ButtonStyle.blurple, label="Relancer le test", custom_id="restart_test", disabled=True)
-                view.add_item(item=item)
-                await interaction.channel.last_message.edit(view=view)
-                ctx = Privat.ctx_mapping.get(interaction.user.id)
-                lang, nombre = Privat.voca_user_data.get(interaction.user.id, "").split(",")
-                return await Privat.test_voca_logic(self, ctx, lang, nombre)
             if interaction.data["custom_id"] == "spam_dm":
                 b, guild, user, msg = interaction.data["values"][0].split("/|/")
                 if b == "y":
@@ -150,7 +141,7 @@ class BotClient(commands.Bot):
                 try:
                     channel = bot.get_guild(int(guild)).get_channel(int(automod_channel_id))
                 except Exception as e:
-                    return await interaction.channel.send(f"Une erreur s'est produite: {e}. \n Veuillez contacter les administarteur du serveur dont est issu le message ({ctx.guild})")
+                    return await interaction.channel.send(f"Une erreur s'est produite: {e}. \n Veuillez contacter les administarteur du serveur dont est issu le message ({guild})")
                 startTime = datetime.strftime(datetime.now(tz), '%H:%M:%S')
                 embed = discord.Embed(title="Signalement de Spam en DM", description=startTime, color=discord.Color.brand_red())
                 embed.add_field(name="User", value=bot.get_user(int(user)).mention, inline=False)
@@ -343,6 +334,7 @@ async def on_error(event_method, *args, **kwargs):
     embed = discord.Embed(title="Rapport de Bug Global",description=f"Une erreur est survenue au niveau de: `{event_method}`.",colour=discord.Colour.orange())
     embed.add_field(name="Bug:", value=f"```{error}```", inline=False)
     embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
+    embed.set_footer(text=f"Bot V{BOT_VERSION}")
     embed.set_author(name="Rapport Automatique", icon_url=bot.user.avatar.url)
     view = discord.ui.View()
     item = discord.ui.Button(style=discord.ButtonStyle.green, label="Corriger", custom_id="bugreport_correction")
@@ -353,6 +345,7 @@ async def on_error(event_method, *args, **kwargs):
 
 @bot.event
 async def on_command_error(ctx: Context, error):
+    Bot.console("ERROR", error)
     command = ctx.command.qualified_name if ctx.command else "Unknown command"
     if isinstance(error, commands.MissingRequiredArgument):
         return await ctx.reply("Missing Argument", ephemeral=True)
@@ -369,6 +362,7 @@ async def on_command_error(ctx: Context, error):
     embed = discord.Embed(title="Rapport de Bug",description=f"Commande concernée `{command}`.",colour=discord.Colour.orange())
     embed.add_field(name="Bug:", value=f"```{error}```", inline=False)
     embed.add_field(name="Etat de correction:", value="En cour...", inline=False)
+    embed.set_footer(text=f"Bot V{BOT_VERSION}")
     embed.set_author(name="Rapport Automatique", icon_url=bot.user.avatar.url)
     view = discord.ui.View()
     item = discord.ui.Button(style=discord.ButtonStyle.green, label="Corriger", custom_id="bugreport_correction")

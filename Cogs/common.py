@@ -136,7 +136,7 @@ class Common(commands.Cog):
         uptime_str = self.format_uptime(uptime_seconds)
         latency = round(self.bot.latency * 1000)
         embed = discord.Embed(title="Bot Status", color=discord.Color.blue())
-        embed.add_field(name="Ping", value=f"{latency} ms", inline=False)
+        embed.add_field(name="Ping (Bot <-> Serveur)", value=f"{latency} ms", inline=False)
         embed.add_field(name="Uptime", value=uptime_str, inline=False)
         embed.add_field(name="Version", value=BOT_VERSION, inline=False)
         api_statut, api_version = AutoMod.handcheck()

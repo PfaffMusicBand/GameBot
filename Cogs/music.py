@@ -49,11 +49,11 @@ class Music(commands.Cog):
             return False
         channel = ctx.author.voice.channel
         if ctx.voice_client:
+            if ctx.voice_client.channel == channel:
+                return True
             if ctx.voice_client.is_playing() or len(self.queue) > 0:
                 await ctx.send("Le bot est déjà en cours d'utilisation.")
                 return False
-            if ctx.voice_client.channel == channel:
-                return True
             else:
                 await ctx.voice_client.disconnect()
         await channel.connect(self_deaf=True)
@@ -88,7 +88,7 @@ class Music(commands.Cog):
             ctx.voice_client.stop()
             await ctx.send("Voix arrêtée.")
 
-    #@commands.hybrid_command(name='queue', help='Affiche la file d\'attente')
+    @commands.hybrid_command(name='queue', help='Affiche la file d\'attente')
     async def show_queue(self, ctx):
         if len(self.queue) == 0:
             await ctx.send("La file d'attente est vide.")
@@ -96,7 +96,11 @@ class Music(commands.Cog):
             queue_titles = [player['title'] for player in self.queue]
             await ctx.send('\n'.join(queue_titles))
 
-    #@commands.hybrid_command(name='play', help='Joue une musique à partir d\'une URL YouTube ou Spotify')
+    @commands.hybrid_command(name='fplay', help='fplay')
+    async def fplay(self, ctx: commands.Context):
+        if not ctx.voice_client.is_playing():
+            await self.play_next(ctx)
+    @commands.hybrid_command(name='play', help='Joue une musique à partir d\'une URL YouTube ou Spotify')
     async def play(self, ctx: commands.Context, url):
         if await self.ljoin(ctx, ir="n") is False:
             return
@@ -123,26 +127,29 @@ class Music(commands.Cog):
                     await ctx.send(f"{video_url} ajouté à la liste.")
             else:
                 self.queue.append({'url': url, 'title': url})
+                print("python ca pue la merde, discord ca pue la merde, youtube ca pue la merde")
                 await ctx.send(f"{url} ajouté à la liste.")
 
         if not ctx.voice_client.is_playing():
+            print("la queue de merde de fsp de python qui pue")
+            print(self.queue)
             await self.play_next(ctx)
 
     async def play_next(self, ctx):
-        if len(self.queue) > 0:
-            url = self.queue.pop(0)['url']
-            await ctx.send("Chargement de la musique...")
-            player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
-            if player is None:
-                await ctx.send("Erreur lors du téléchargement de la vidéo. Passage à la suivante...")
-                await self.play_next(ctx)
-                return
-            if ctx.voice_client is None:
-                return
-            ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
-            await ctx.send(f"Lecture de : {player.title}")
-        else:
-            await ctx.send("La file d'attente est vide.")
+        #if len(self.queue) > 0:
+        url = self.queue.pop(0)['url']
+        await ctx.send("Chargement de la musique...")
+        player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
+        if player is None:
+            await ctx.send("Erreur lors du téléchargement de la vidéo. Passage à la suivante...")
+            await self.play_next(ctx)
+            return
+        if ctx.voice_client is None:
+            return
+        ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
+        await ctx.send(f"Lecture de : {player.title}")
+        #else:
+        #    await ctx.send("La file d'attente est vide.")
 
     async def get_spotify_tracks(self, url):
         tracks = []
