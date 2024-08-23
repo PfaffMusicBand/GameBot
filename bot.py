@@ -5,8 +5,6 @@ import os
 import discord.ext
 import discord.ext.commands
 import argparse
-import pytz
-import glob
 from Packs.Botloader import tz,owner_permission, Data, Bot, GameHub
 from random import randint
 from typing import Any
@@ -232,7 +230,7 @@ class BotClient(commands.Bot):
                         for attachment in message.attachments:
                             embed.add_field(name="Attachment", value=attachment.proxy_url, inline=False)
                     if channel.id == GameHub.MessageChannel:
-                        await channel.send("||<@575746878583472128>||||<@724996627366019133>||", embed=embed, view=view)
+                        await channel.send("||<@831971146386636820>||||<@724996627366019133>||", embed=embed, view=view)
                     else:
                         await channel.send(embed=embed, view=view)
         data = Data.get_guild_conf(message.guild.id, Data.key['custom_commands_names'])

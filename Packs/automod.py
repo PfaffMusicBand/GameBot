@@ -1,5 +1,5 @@
 import requests
-from Packs.Botloader import Data,Bot
+from Packs.Botloader import Bot
 from requests.exceptions import ConnectionError, Timeout
 
 class AutoMod:
