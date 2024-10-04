@@ -2,6 +2,7 @@ import discord
 import yt_dlp as youtube_dl
 import spotipy
 import asyncio
+import ffmpeg
 from discord.ext import commands
 from spotipy.oauth2 import SpotifyClientCredentials
 from discord.ext.commands import Context
@@ -14,7 +15,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIPY_CLI
 youtube_dl.utils.bug_reports_message = lambda: ''
 
 ytdl_format_options = {
-    'format': 'bestaudio',
+    'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
     'noplaylist': True,
@@ -25,11 +26,11 @@ ytdl_format_options = {
     'no_warnings': True,
     'default_search': 'auto',
     'source_address': '0.0.0.0',
-    #'proxy': 'https://176.148.176.111'
 }
 
 ffmpeg_options = {
-    'options': '-vn'
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',  # Ensure reconnect on network issues
+    'options': '-vn',
 }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
@@ -43,7 +44,7 @@ class Music(commands.Cog):
     async def join(self, ctx):
         await self.ljoin(ctx)
 
-    async def ljoin(self, ctx:Context, *, ir="y"):
+    async def ljoin(self, ctx: Context, *, ir="y"):
         if not ctx.author.voice:
             await ctx.send("Vous n'êtes pas connecté à un canal vocal.")
             return False
@@ -100,6 +101,7 @@ class Music(commands.Cog):
     async def fplay(self, ctx: commands.Context):
         if not ctx.voice_client.is_playing():
             await self.play_next(ctx)
+
     @commands.hybrid_command(name='play', help='Joue une musique à partir d\'une URL YouTube ou Spotify')
     async def play(self, ctx: commands.Context, url):
         if await self.ljoin(ctx, ir="n") is False:
@@ -127,29 +129,26 @@ class Music(commands.Cog):
                     await ctx.send(f"{video_url} ajouté à la liste.")
             else:
                 self.queue.append({'url': url, 'title': url})
-                print("python ca pue la merde, discord ca pue la merde, youtube ca pue la merde")
                 await ctx.send(f"{url} ajouté à la liste.")
 
         if not ctx.voice_client.is_playing():
-            print("la queue de merde de fsp de python qui pue")
-            print(self.queue)
             await self.play_next(ctx)
 
     async def play_next(self, ctx):
-        #if len(self.queue) > 0:
-        url = self.queue.pop(0)['url']
-        await ctx.send("Chargement de la musique...")
-        player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
-        if player is None:
-            await ctx.send("Erreur lors du téléchargement de la vidéo. Passage à la suivante...")
-            await self.play_next(ctx)
-            return
-        if ctx.voice_client is None:
-            return
-        ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
-        await ctx.send(f"Lecture de : {player.title}")
-        #else:
-        #    await ctx.send("La file d'attente est vide.")
+        if len(self.queue) > 0:
+            url = self.queue.pop(0)['url']
+            await ctx.send("Chargement de la musique...")
+            player = await self.YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            if player is None:
+                await ctx.send("Erreur lors du téléchargement de la vidéo. Passage à la suivante...")
+                await self.play_next(ctx)
+                return
+            if ctx.voice_client is None:
+                return
+            ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop).result())
+            await ctx.send(f"Lecture de : {player.title}")
+        else:
+            await ctx.send("La file d'attente est vide.")
 
     async def get_spotify_tracks(self, url):
         tracks = []
@@ -210,8 +209,6 @@ class Music(commands.Cog):
             self.data = data
             self.title = data.get('title')
             self.url = data.get('url')
-            self.filename = ytdl.prepare_filename(data)
-            self.duration = data.get('duration')
 
         @classmethod
         async def from_url(cls, url, *, loop=None, stream=False):
