@@ -1,5 +1,6 @@
 import os
 import argparse
+import subprocess
 
 def main():
     try:
@@ -7,7 +8,12 @@ def main():
         parser.add_argument('--bot', type=str, default="Bot", help='Nom du bot à lancer')
         parser.add_argument('--restart', type=str, default="n", help='Redémarage du bot y/n.')
         parser.add_argument('--pasword', type=str, default="pasword", help="Mot de passe")
+        parser.add_argument('--update', action='store_true', help="Vérifie la mise à jour avant de lancer")
         args = parser.parse_args()
+
+        if args.update:
+            run_updater()
+
         if args.restart.lower() == "y":
             launch_bot(args.bot, args.pasword)
         else:
@@ -17,14 +23,22 @@ def main():
         print(f"Erreur lors de l'analyse des arguments : {e}")
         raise
 
-os.system("cls||clear")
+def run_updater():
+    print("Exécution de la mise à jour via updater.py...")
+    try:
+        subprocess.run(["python", "updater.py"], check=True)
+        print("Mise à jour terminée. Relancement de Launcher.py...")
+        subprocess.run(["python", "Launcher.py"], check=True)
+    except Exception as e:
+        print(f"Erreur lors de l'exécution de la mise à jour : {e}")
+    exit()
 
-liste = ["","BetaBelouga","Belouga","GameHub"]
+liste = ["", "BetaBelouga", "Belouga", "GameHub"]
 
 LICENCE = open("LICENCE").read()
-print(LICENCE)
 
 def start():
+    print(LICENCE)
     bot = input(f"""
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 @    _________________________________________________________________________________________________________________    @
@@ -52,27 +66,14 @@ Bot=>   """)
     if not bot.isdigit():
         print("Veuillez entrer un entier valide.")
         start()
-#   print(f"""
-#Bot: {liste[int(bot)]}
-#    """)
-#    version = input(f"""
-#=========================================================
-#|    Selectionnez une version:                          |
-#|    _________________                                  |
-#|   |[versions]|[code]|                                 |
-#|   |   1.4    |  1.4 |                                 |
-#|   '''''''''''''''''''                                 |
-#=========================================================
-#
-#Version=>   """)
+
     pasword = input("Pasword =>")
 
     try:
         launch_bot(bot_name = liste[int(bot)], pasword=pasword)
     except Exception as errors:
-        print(f"Une erreur est survenue:{errors}")
+        print(f"Une erreur est survenue : {errors}")
         start()
-    pass
 
 def launch_bot(bot_name, pasword):
     try:
@@ -80,6 +81,6 @@ def launch_bot(bot_name, pasword):
     except Exception as errors:
         print(f"Une erreur est survenue : {errors}")
         start()
-        
+
 if __name__ == '__main__':
     main()
