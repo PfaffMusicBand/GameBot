@@ -104,7 +104,7 @@ class BotClient(commands.Bot):
     async def version(self, ctx: Context):
         await self.versions(type="commande", ctx=ctx)
         
-    async def restart(self, ctx: Context, update = None):
+    async def restart(self, ctx: Context,*, update = None):
         if update == "--update":
             global u
             u = update

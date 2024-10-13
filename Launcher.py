@@ -13,7 +13,7 @@ def main():
 
         if args.update:
             if args.restart.lower() == "y":
-                with open("temp_args.txt", "w") as temp_file:
+                with open("temp_args", "w") as temp_file:
                     temp_file.write(f"{args.bot},{args.pasword}")
             run_updater()
 
@@ -21,10 +21,11 @@ def main():
             launch_bot(args.bot, args.pasword)
 
         else:
-            with open("temp_args.txt", "r") as temp_file:
+            with open("temp_args", "r") as temp_file:
                 ligne = temp_file.readline()
             if ligne != "":
                 bot, pasword = ligne.split(",")
+                os.remove("temp_args")
                 launch_bot(bot, pasword)
             else:
                 start()

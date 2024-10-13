@@ -1,4 +1,4 @@
-VERSION = "1.4.4"
+VERSION = "1.4.5"
 DATE = "13/10/2024"
 PATCH = "Commande `retsart`:\nAjout de l'option `--update`"
 OLD4.3 = "Maj finalle updater.py"
