@@ -23,7 +23,10 @@ def main():
         print(f"Erreur lors de l'analyse des arguments : {e}")
         raise
 
+LICENCE = open("LICENCE").read()
+
 def run_updater():
+    print(LICENCE)
     print("Exécution de la mise à jour via updater.py...")
     try:
         subprocess.run(["python", "updater.py"], check=True)
@@ -35,10 +38,7 @@ def run_updater():
 
 liste = ["", "BetaBelouga", "Belouga", "GameHub"]
 
-LICENCE = open("LICENCE").read()
-
 def start():
-    #print(LICENCE)
     bot = input(f"""
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 @    _________________________________________________________________________________________________________________    @
