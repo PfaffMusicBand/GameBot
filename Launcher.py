@@ -21,13 +21,14 @@ def main():
             launch_bot(args.bot, args.pasword)
 
         else:
-            with open("temp_args", "r") as temp_file:
-                ligne = temp_file.readline()
-            if ligne != "":
-                bot, pasword = ligne.split(",")
-                os.remove("temp_args")
-                launch_bot(bot, pasword)
-            else:
+            try:
+                with open("temp_args", "r") as temp_file:
+                    ligne = temp_file.readline()
+                if ligne != "":
+                    bot, pasword = ligne.split(",")
+                    os.remove("temp_args")
+                    launch_bot(bot, pasword)
+            except:
                 start()
 
     except SystemExit as e:
