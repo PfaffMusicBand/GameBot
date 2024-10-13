@@ -104,7 +104,7 @@ class BotClient(commands.Bot):
     async def version(self, ctx: Context):
         await self.versions(type="commande", ctx=ctx)
         
-    async def restart(self, ctx: Context,*, update = None):
+    async def restart(self, ctx: Context, update):
         if update == "--update":
             global u
             u = update
@@ -315,8 +315,8 @@ bot = client = BotClient(command_prefix=Bot.Prefix,intents=discord.Intents.all()
 bot.remove_command('help')
 
 @bot.command(name="restart")
-async def restart(ctx):
-    await bot.restart(ctx)
+async def restart(ctx, *, update=None):
+    await bot.restart(ctx, update)
 
 @bot.hybrid_command(name="version")
 async def version(ctx):
