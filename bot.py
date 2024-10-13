@@ -33,6 +33,7 @@ if __name__ == '__main__':
 
 statutpresence = ["you!", "cooked you!"]
 r = "n"
+u = ""
 
 class BotClient(commands.Bot):
     def __init__(self, *args, **kwargs):
@@ -103,7 +104,10 @@ class BotClient(commands.Bot):
     async def version(self, ctx: Context):
         await self.versions(type="commande", ctx=ctx)
         
-    async def restart(self, ctx: Context):
+    async def restart(self, ctx: Context, update = None):
+        if update == "--update":
+            global u
+            u = update
         if owner_permission.check(ctx.author.id) != True:
             return await ctx.reply("Vous ne disposez pas des autorisations nécéssaire.")
         await self.change_presence(status=discord.Status.dnd, activity=discord.Game("Redémarage en cour..."))
@@ -373,4 +377,4 @@ async def on_command_error(ctx: Context, error):
 try:
     bot.run(Bot.Token)
 except: print("Bad Pasword")
-os.system(f"python Launcher.py --bot {Bot.Name} --restart {r} --pasword {Bot.Pasword}")
+os.system(f"python Launcher.py --bot {Bot.Name} --restart {r} --pasword {Bot.Pasword} {u}")

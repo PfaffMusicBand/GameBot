@@ -12,12 +12,22 @@ def main():
         args = parser.parse_args()
 
         if args.update:
+            if args.restart.lower() == "y":
+                with open("temp_args.txt", "w") as temp_file:
+                    temp_file.write(f"{args.bot},{args.pasword}")
             run_updater()
 
         if args.restart.lower() == "y":
             launch_bot(args.bot, args.pasword)
+
         else:
-            start()
+            with open("temp_args.txt", "r") as temp_file:
+                ligne = temp_file.readline()
+            if ligne != "":
+                bot, pasword = ligne.split(",")
+                launch_bot(bot, pasword)
+            else:
+                start()
 
     except SystemExit as e:
         print(f"Erreur lors de l'analyse des arguments : {e}")
