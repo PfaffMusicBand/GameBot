@@ -51,7 +51,23 @@ def run_updater():
 liste = ["", "BetaBelouga", "Belouga", "GameHub"]
 
 def start():
-    bot = input(f"""
+    choice = input("""
+Sélectionner une option:
+[1]Choix du Bot
+[2]Terminal
+                   """)
+    if not choice.isdigit():
+        print("Veuillez entrer un entier valide.")
+        start()
+    if choice == 2:
+        commande = input("launcher:")
+        try:
+            os.system(commande)
+        except Exception as e:
+            print(e)
+        start()
+    if choice == 1:
+        bot = input(f"""
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 @    _________________________________________________________________________________________________________________    @
 @                                                                                                                         @
@@ -75,17 +91,17 @@ def start():
 =========================================================
 
 Bot=>   """)
-    if not bot.isdigit():
-        print("Veuillez entrer un entier valide.")
-        start()
+        if not bot.isdigit():
+            print("Veuillez entrer un entier valide.")
+            start()
 
-    pasword = input("Pasword =>")
-
-    try:
-        launch_bot(bot_name = liste[int(bot)], pasword=pasword)
-    except Exception as errors:
-        print(f"Une erreur est survenue : {errors}")
-        start()
+        pasword = input("Pasword =>")
+    
+        try:
+            launch_bot(bot_name = liste[int(bot)], pasword=pasword)
+        except Exception as errors:
+            print(f"Une erreur est survenue : {errors}")
+            start()
 
 def launch_bot(bot_name, pasword):
     try:

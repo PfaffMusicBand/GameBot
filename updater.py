@@ -4,11 +4,10 @@ import base64
 
 repo_owner = "smaugue"
 repo_name = "GameBot"
-branch_name = "main"  # Ajuste la branche si nécessaire
+branch_name = "main"
 token = "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"
-ignore_files = ["updater.py","GameHub.db",".gitattributes", "*.db"]  # Fichiers à ignorer lors de la mise à jour
+ignore_files = ["updater.py","GameHub.db",".gitattributes", "*.db"]
 
-# Dossier local où se trouvent les fichiers
 local_folder = os.path.dirname(os.path.abspath(__file__))
 
 def get_version():
@@ -38,10 +37,9 @@ class Version:
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             content = response.json()
-            # Si le contenu est une liste, cela signifie que c'est un répertoire
             if isinstance(content, list):
-                return content  # Renvoie la liste pour un traitement ultérieur
-            return content.get('content', '')  # Sinon, renvoie le contenu
+                return content
+            return content.get('content', '')
         else:
             print(f"Erreur lors de la récupération des données depuis GitHub : {response.status_code}")
             return None
@@ -74,19 +72,17 @@ class Version:
     @staticmethod
     def download_file_from_github(file_info, local_path):
         file_name = file_info['name']
-        file_path = file_info['path']  # Obtenir le chemin du fichier
+        file_path = file_info['path']
         content = Version.get_github_data(file_path)
         if content:
             try:
                 decoded_content = base64.b64decode(content).decode('utf-8')
-                # Sauvegarde du fichier téléchargé dans le dossier local
                 local_file_path = os.path.join(local_path, file_name)
                 with open(local_file_path, 'w', encoding='utf-8') as local_file:
                     local_file.write(decoded_content)
                 print(f"Fichier {file_name} mis à jour.")
             except UnicodeDecodeError:
                 print(f"Le fichier {file_name} n'est pas un fichier texte. Ignorer...")
-                # Enregistrer le fichier binaire sans décodage si nécessaire
                 binary_content = base64.b64decode(content)
                 local_file_path = os.path.join(local_path, file_name)
                 with open(local_file_path, 'wb') as local_file:
@@ -102,7 +98,7 @@ class Version:
                 file_type = file_info['type']
                 if file_type == "file" and file_name not in ignore_files:
                     Version.download_file_from_github(file_info, local_path)
-                elif file_type == "dir":  # Cas d'un dossier
+                elif file_type == "dir":
                     sub_folder_local = os.path.join(local_path, file_name)
                     os.makedirs(sub_folder_local, exist_ok=True)
                     Version.update_files(repo_path=file_info['path'], local_path=sub_folder_local)

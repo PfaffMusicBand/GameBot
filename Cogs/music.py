@@ -59,11 +59,11 @@ class Music(commands.Cog):
             if ctx.voice_client.is_playing() or len(self.queue) > 0:
                 await ctx.send("Le bot est déjà en cour d'utilisation.")
                 return False
-            else: await ctx.voice_client.disconnect()
-        await channel.connect(self_deaf=True)
+            elif ctx.voice_client.channel != channel:
+                await ctx.voice_client.disconnect()
+                await channel.connect(self_deaf=True)
         if ir == "y":
             await ctx.send(f'Connecté à {channel.name}.')
-        else: await ctx.channel.send(f'Connecté à {channel.name}.')
         return True
 
     @commands.hybrid_command(name='leave', help='Fait quitter le bot du canal vocal')
