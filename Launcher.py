@@ -55,9 +55,13 @@ def start():
 Sélectionner une option:
 [1]Choix du Bot
 [2]Terminal
+[3]Licence
 """)
     if not choice.isdigit():
         print("Veuillez entrer un entier valide.")
+        start()
+    if choice == "3":
+        print(LICENCE)
         start()
     if choice == "2":
         commande = input("launcher:")
