@@ -36,6 +36,7 @@
 *.dll
 *.exe
 *.class
+*.pyc
 
 # Ignorer les répertoires des dépendances (ex. pour Node.js, Python, etc.)
 node_modules/

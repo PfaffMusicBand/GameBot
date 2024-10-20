@@ -1,7 +1,6 @@
 import requests
 import base64
-from Botloader import Reposit
-
+from Packs.Botloader import Reposit
 
 repo_owner = Reposit.repo_owner
 repo_name = Reposit.repo_name
