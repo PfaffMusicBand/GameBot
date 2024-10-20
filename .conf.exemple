@@ -15,9 +15,9 @@ api_key = me_key
 bot_name= bot
 #crypted token
 bot_token = "token"
-BetaBelouga_guild = 0
-BetaBelouga_annonce_channel = 0
-BetaBelouga_console_channel = 0
-BetaBelouga_message_channel = 0
-BetaBelouga_bugreport_channel = 0
-BetaBelouga_prefix = !
+bot_guild = 0
+bot_annonce_channel = 0
+bot_console_channel = 0
+bot_message_channel = 0
+bot = 0
+bot_prefix = !
