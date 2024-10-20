@@ -1,5 +1,5 @@
 import requests
-from Packs.Botloader import Bot
+from Packs.Botloader import Bot, Conf
 from requests.exceptions import ConnectionError, Timeout
 
 class AutoMod:
@@ -25,7 +25,7 @@ class AutoMod:
     >>> for key in blw:
     >>>     print(f"Mot {key} détecté: {round(blws[key], 2) * 100}% de ressemblance avec {blw[key]}.")
     """
-    API_KEY = "smaugue_jp56tkJ6LTk8SF94OPs1zRbSHG8pvvtO"
+    API_KEY = Conf.config_vars.get("api_key")
 
     def check_message(message: str,*,level = 3):
         bw = {}

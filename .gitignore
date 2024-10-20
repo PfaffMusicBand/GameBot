@@ -1,0 +1,62 @@
+# Ignorer les fichiers de bases de données
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+*.mdb
+*.accdb
+
+# Ignorer les fichiers de configuration
+*.conf
+
+# Ignorer les fichiers sensibles ou secrets (clés, mots de passe, etc.)
+*.env
+*.key
+*.pem
+*.crt
+*.pfx
+
+# Ignorer les fichiers de log
+*.log
+
+# Ignorer les fichiers de sauvegarde
+*.bak
+*.old
+*.backup
+
+# Ignorer les fichiers temporaires de l'éditeur
+*.swp
+*.swo
+*~
+
+# Ignorer les fichiers binaires compilés
+*.o
+*.out
+*.so
+*.dll
+*.exe
+*.class
+
+# Ignorer les répertoires des dépendances (ex. pour Node.js, Python, etc.)
+node_modules/
+vendor/
+venv/
+
+# Ignorer les répertoires des builds (par exemple pour des projets Java, C, etc.)
+build/
+dist/
+target/
+bin/
+obj/
+
+# Ignorer les fichiers de cache
+*.cache
+*.tmp
+*.pid
+*.lock
+
+# Ignorer les fichiers de contrôle de version
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

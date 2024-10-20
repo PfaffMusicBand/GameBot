@@ -2,11 +2,23 @@ import os
 import requests
 import base64
 
-repo_owner = "smaugue"
-repo_name = "GameBot"
-branch_name = "main"
-token = "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"
-ignore_files = ["updater.py","GameHub.db",".gitattributes", "*.db"]
+config_vars = {}
+
+with open(".conf", "r") as config_file:
+    for line in config_file:
+        if line.strip() and not line.startswith("#"):
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip()
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            config_vars[key] = value
+
+repo_owner = config_vars.get("repo_owner")
+repo_name = config_vars.get("repo_name")
+branch_name = config_vars.get("branch_name")
+token = config_vars.get("git_token")
+ignore_files = config_vars.get("ignore_files", "").split("")
 
 local_folder = os.path.dirname(os.path.abspath(__file__))
 

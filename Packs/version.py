@@ -1,10 +1,12 @@
 import requests
 import base64
+from Botloader import Reposit
 
-repo_owner = "smaugue"
-repo_name = "GameBot"
+
+repo_owner = Reposit.repo_owner
+repo_name = Reposit.repo_name
+token = Reposit.token
 file_path = "Version"
-token = "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"
 
 def get_version():
     data = open("Version", encoding='utf-8')

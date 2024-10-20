@@ -1,0 +1,23 @@
+#Git reposit acces
+repo_owner = owner
+repo_name = reposit
+branch_name = main
+git_token = git_token
+#don't modify
+ignore_files = updater.py .gitattributes .conf
+
+# AutoModAPI
+
+api_key = me_key
+
+#Bot
+
+bot_name= bot
+#crypted token
+bot_token = "token"
+BetaBelouga_guild = 0
+BetaBelouga_annonce_channel = 0
+BetaBelouga_console_channel = 0
+BetaBelouga_message_channel = 0
+BetaBelouga_bugreport_channel = 0
+BetaBelouga_prefix = !

@@ -47,6 +47,21 @@ class owner_permission:
         if member_id != owner_permission.owner_id:
             return False
         else: return True
+
+class Conf():
+
+    config_vars = {}
+
+    with open(".conf", "r") as config_file:
+        for line in config_file:
+            if line.strip() and not line.startswith("#"):
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1]
+                config_vars[key] = value
+
 class Data:
     """
     Data
@@ -388,16 +403,15 @@ class Bot():
         return token
     
     def Launched(launched_bot, pasword):
-        launched_bot_class = globals()[launched_bot]
         Bot.Pasword = pasword
-        Bot.Name = launched_bot_class.Name
-        Bot.Token = Bot.get_token(launched_bot_class.__Token__, pasword)
-        Bot.BotGuild = launched_bot_class.BotGuild
-        Bot.AnnonceChannel = launched_bot_class.AnnonceChannel
-        Bot.ConsoleChannel = launched_bot_class.ConsoleChannel
-        Bot.MessageChannel = launched_bot_class.MessageChannel
-        Bot.BugReportChannel = launched_bot_class.BugreportChannel
-        Bot.Prefix = launched_bot_class.Prefix
+        Bot.Name = Conf.config_vars.get(f"{launched_bot}_name")
+        Bot.Token = Conf.config_vars.get(f"{launched_bot}_token")
+        Bot.BotGuild = Conf.config_vars.get(f"{launched_bot}_guild")
+        Bot.AnnonceChannel = Conf.config_vars.get(f"{launched_bot}_annonce_channel")
+        Bot.ConsoleChannel = Conf.config_vars.get(f"{launched_bot}_console_channel")
+        Bot.MessageChannel = Conf.config_vars.get(f"{launched_bot}_message_channel")
+        Bot.BugReportChannel = Conf.config_vars.get(f"{launched_bot}_bugreport_channel")
+        Bot.Prefix = Conf.config_vars.get(f"{launched_bot}_prefix")
         Bot.Database = Data(f"{Bot.Name}.db")
 
     Name = str()
@@ -410,33 +424,8 @@ class Bot():
     Prefix = str()
     Pasword = str()
 
-class BetaBelouga:
-    Name= "BetaBelouga"
-    __Token__ = "145 185 205 150 144 185 189 216 145 185 205 218 143 207 189 217 144 185 185 216 144 207 201 147 112 190 225 214 175 220 219 143 155 189 217 166 171 177 161 200 139 220 234 192 131 196 166 147 182 146 225 180 116 146 222 215 152 179 197"
-    BotGuild = 969214672215625748
-    AnnonceChannel = 1066680440209027152
-    ConsoleChannel = 972036600357879828
-    MessageChannel = 1009208789674754098
-    BugreportChannel = 1239839087888830466
-    Prefix = "BB"
-
-class Belouga:
-    Name= "Belouga"
-    __Token__ = "159 181 202 231 178 227 182 199 174 225 196 149 183 219 169 146 181 179 177 155 175 148 170 153 157 171 192 181 152 216 168 157 170 214 215 196 182 225 209 157 182 147 148 177 181 199 151 185 214 134 162 155 210 152 219 196 149 203 217 221 208 183 215 186 150 156 228 182 185 170"
-    BotGuild = 969214672215625748
-    AnnonceChannel = 1066680440209027152
-    ConsoleChannel = 972036409085014046
-    MessageChannel = 1175569633357598742
-    BugreportChannel = 1239839087888830466
-    Prefix = "$"
-
-class GameHub:
-    Name = "GameHub"
-    __Token__ = "157 181 172 232 178 173 162 128 175 187 180 219 183 203 165 146 180 195 181 154 175 164 196 152 189 165 151 168 159 209 184 209 209 151 178 128 185 204 217 168 187 173 189 200 212 163 205 217 168 168 179 171 179 198 173 217 187 196 213 186 211 211 200 149 210 192 189 200 184 217 133 196"
-    BotGuild = 1108421336042328125
-    AnnonceChannel = 1141666570188361771
-    ConsoleChannel = 1141666570188361771
-    MessageChannel = 1141666570188361771
-    BugreportChannel = 1141666570188361771
-    VTTSListenerChannel = 1242185337053380738
-    Prefix = "?"
+class Reposit():
+        
+    repo_owner = Conf.config_vars.get("repo_owner")
+    repo_name = Conf.config_vars.get("repo_name")
+    token = Conf.config_vars.get("git_token")
