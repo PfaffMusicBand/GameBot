@@ -405,7 +405,6 @@ class Bot():
     def Launched(launched_bot, pasword):
         Bot.Pasword = pasword
         Bot.Name = Conf.config_vars.get(f"{launched_bot}_name")
-        print(Conf.config_vars.get(f"{launched_bot}_token"))
         Bot.Token = Bot.get_token(Conf.config_vars.get(f"{launched_bot}_token"), pasword)
         Bot.BotGuild = Conf.config_vars.get(f"{launched_bot}_guild")
         Bot.AnnonceChannel = Conf.config_vars.get(f"{launched_bot}_annonce_channel")
