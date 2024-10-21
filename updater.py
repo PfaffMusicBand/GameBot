@@ -1,6 +1,20 @@
 import os
 import requests
 import base64
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(description='Scripte Updater.')
+    parser.add_argument('--force', action='store_true', help="Force la mise à jour")
+    args = parser.parse_args()
+
+    if args.force:
+        print("Mise à jour forcée...")
+        Version.update_files()
+        print(f"Version {Version.LATEST_VERSION}")
+
+    elif version_tuple:
+        Version.update_if_needed()
 
 config_vars = {}
 
@@ -18,7 +32,7 @@ repo_owner = config_vars.get("repo_owner")
 repo_name = config_vars.get("repo_name")
 branch_name = config_vars.get("branch_name")
 token = config_vars.get("git_token")
-ignore_files = config_vars.get("ignore_files", "").split("")
+ignore_files = config_vars.get("ignore_files", "").split(" ")
 
 local_folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,8 +59,7 @@ class Version:
     @staticmethod
     def get_github_data(file_path):
         url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{file_path}?ref={branch_name}"
-        headers = {"Authorization": f"token {token}"}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url)
         if response.status_code == 200:
             content = response.json()
             if isinstance(content, list):
@@ -134,5 +147,4 @@ class Version:
             print("Aucune action effectuée en raison d'une erreur.")
 
 if __name__ == "__main__":
-    if version_tuple:
-        Version.update_if_needed()
+    main()

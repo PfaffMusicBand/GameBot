@@ -1,4 +1,3 @@
-
 def encrypt_token(token, key):
     encrypted_token = ""
     for i, char in enumerate(token):

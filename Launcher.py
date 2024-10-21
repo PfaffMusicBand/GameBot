@@ -37,11 +37,22 @@ def main():
 
 LICENCE = open("LICENCE").read()
 
+def force_run_updater():
+    print(LICENCE)
+    print("Exécution de la mise à jour via updater.py...")
+    try:
+        subprocess.run(["python", "updater.py", "--force"], check=True)
+        print("Mise à jour terminée. Relancement de Launcher.py...")
+        subprocess.run(["python", "Launcher.py"], check=True)
+    except Exception as e:
+        print(f"Erreur lors de l'exécution de la mise à jour : {e}")
+    exit()
+
 def run_updater():
     print(LICENCE)
     print("Exécution de la mise à jour via updater.py...")
     try:
-        subprocess.run(["python", "updater.py"], check=True)
+        subprocess.run(["python", "updater.py", "--force"], check=True)
         print("Mise à jour terminée. Relancement de Launcher.py...")
         subprocess.run(["python", "Launcher.py"], check=True)
     except Exception as e:
@@ -56,10 +67,24 @@ Sélectionner une option:
 [1]Choix du Bot
 [2]Terminal
 [3]Licence
+[4]Mise à jour 
 """)
     if not choice.isdigit():
         print("Veuillez entrer un entier valide.")
         start()
+    if choice == "4":
+        option = input("""
+[1]Check&Update
+[2]Force Update
+""")
+        if not option.isdigit():
+            print("Veuillez entrer un entier valide.")
+            start()
+        if option == "1":
+            run_updater()
+        if option == "2":
+            force_run_updater()
+        else: start()
     if choice == "3":
         print(LICENCE)
         start()
@@ -106,6 +131,7 @@ Bot=>   """)
         except Exception as errors:
             print(f"Une erreur est survenue : {errors}")
             start()
+    else: start()
 
 def launch_bot(bot_name, pasword):
     try:
