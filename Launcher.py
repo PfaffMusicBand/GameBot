@@ -52,7 +52,7 @@ def run_updater():
     print(LICENCE)
     print("Exécution de la mise à jour via updater.py...")
     try:
-        subprocess.run(["python", "updater.py", "--force"], check=True)
+        subprocess.run(["python", "updater.py"], check=True)
         print("Mise à jour terminée. Relancement de Launcher.py...")
         subprocess.run(["python", "Launcher.py"], check=True)
     except Exception as e:

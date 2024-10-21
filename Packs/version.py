@@ -4,7 +4,6 @@ from Packs.Botloader import Reposit
 
 repo_owner = Reposit.repo_owner
 repo_name = Reposit.repo_name
-token = Reposit.token
 file_path = "Version"
 
 def get_version():
@@ -25,8 +24,7 @@ class Version:
 
     def get_github_data():
         url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{file_path}"
-        headers = {"Authorization": f"token {token}"}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url)
         if response.status_code == 200:
             content = response.json().get('content', '')
             if content:
