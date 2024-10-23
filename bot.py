@@ -237,7 +237,7 @@ class BotClient(commands.Bot):
                     #    await channel.send("||<@831971146386636820>||||<@724996627366019133>||", embed=embed, view=view)
                     else:
                         await channel.send(embed=embed, view=view)
-        data = Data.get_guild_conf(message.guild.id, Data.key['custom_commands_names'])
+        data = Data.get_guild_conf(message.guild.id, Data.CUSTOM_COMMANDS_NAMES)
         if data:
             if len(data) > 0:
                 data = data.split("\n")
@@ -309,7 +309,7 @@ class BotClient(commands.Bot):
 #           Botloader.Data.update_user_conf(message.guild.id, message.author.id, 'xp_reward_message', data_m + count * xp_multiplicator)
 #           Botloader.Data.update_user_conf(message.guild.id, message.author.id, 'xp_reward_total', data + count * xp_multiplicator)
 #            await message.reply(f'Vous avez gagné {count * xp_multiplicator}. Vous avez un total de {data + count * xp_multiplicator} dont {data_m + count * xp_multiplicator} grâce aux messages.')
-        await self.process_commands(message)
+        await bot.process_commands(message)
 
 bot = client = BotClient(command_prefix=Bot.Prefix,intents=discord.Intents.all(),description="Belouga.exe is watching you!!!")
 bot.remove_command('help')
