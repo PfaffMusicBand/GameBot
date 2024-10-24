@@ -59,9 +59,10 @@ class Music(commands.Cog):
             if ctx.voice_client.is_playing() or len(self.queue) > 0:
                 await ctx.send("Le bot est déjà en cour d'utilisation.")
                 return False
-            elif ctx.voice_client.channel != channel:
+            elif ctx.voice_client.channel.id != channel.id:
                 await ctx.voice_client.disconnect()
                 await channel.connect(self_deaf=True)
+            else: await channel.connect()
         if ir == "y":
             await ctx.send(f'Connecté à {channel.name}.')
         return True
@@ -79,7 +80,6 @@ class Music(commands.Cog):
             return
         if not ctx.voice_client:
             return await ctx.send("Je ne suis pas connecté à un canal vocal.")
-
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
             ctx.voice_client.play(player, after=lambda e: print(f'Erreur: {e}') if e else self.play_next(ctx))

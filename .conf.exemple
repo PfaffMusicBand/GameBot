@@ -20,5 +20,4 @@ bot_guild = 0
 bot_annonce_channel = 0
 bot_console_channel = 0
 bot_message_channel = 0
-bot = 0
 bot_prefix = !
