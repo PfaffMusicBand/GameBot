@@ -8,7 +8,7 @@ git_token = git_token
 ignore_files = updater.py .gitattributes gitignore .conf
 
 # AutoModAPI
-
+# for request API key, pleas send message to support@gamebot.smaugue.lol
 api_key = me_key
 
 #Bot
